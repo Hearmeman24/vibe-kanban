@@ -454,6 +454,28 @@ impl EventService {
                                     {
                                         let patch = task_patch::replace(&task_with_status);
                                         msg_store_for_hook.push_patch(patch);
+
+                                        // Trigger WorkspaceStarted webhook on workspace insert
+                                        if hook.operation == SqliteOperation::Insert {
+                                            if let Some(ref webhook_svc) = webhook_service {
+                                                let workspace_data =
+                                                    serde_json::to_value(workspace).unwrap_or_default();
+                                                if let Err(e) = webhook_svc
+                                                    .trigger_event(
+                                                        task.project_id,
+                                                        &WebhookEvent::WorkspaceStarted,
+                                                        workspace_data,
+                                                    )
+                                                    .await
+                                                {
+                                                    tracing::error!(
+                                                        "Failed to trigger WorkspaceStarted webhook: {:?}",
+                                                        e
+                                                    );
+                                                }
+                                            }
+                                        }
+
                                         return;
                                     }
                                 }
