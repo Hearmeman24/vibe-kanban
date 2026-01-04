@@ -1,7 +1,7 @@
 ---
 name: worker
 description: General worker agent for small tasks. Use when delegating single-file changes, quick fixes, or trivial implementations under 30 lines.
-model: sonnet
+model: opus
 tools: Read, Edit, Write, Bash, Glob, Grep
 ---
 
