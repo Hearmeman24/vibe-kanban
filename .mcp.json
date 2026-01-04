@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "vibe_kanban": {
-      "command": "cargo",
-      "args": ["run", "--release", "--bin", "mcp_task_server"]
+      "command": "./target/release/mcp_task_server",
+      "args": []
     }
   }
 }
