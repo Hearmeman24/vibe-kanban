@@ -1,29 +1,66 @@
-# Build stage
-FROM node:24-alpine AS builder
+# syntax=docker/dockerfile:1
 
-# Install build dependencies
+# ==============================================================================
+# Stage 1: Chef base - Install cargo-chef for dependency caching
+# ==============================================================================
+FROM rust:alpine AS chef
+
 RUN apk add --no-cache \
-    curl \
     build-base \
     perl \
     llvm-dev \
-    clang-dev
+    clang-dev \
+    musl-dev
 
 # Allow linking libclang on musl
 ENV RUSTFLAGS="-C target-feature=-crt-static"
 
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+RUN cargo install cargo-chef
+WORKDIR /app
+
+# ==============================================================================
+# Stage 2: Planner - Analyze dependencies and create recipe
+# ==============================================================================
+FROM chef AS planner
+
+# Copy only what's needed for dependency analysis
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+# Generate recipe.json (dependency manifest)
+RUN cargo chef prepare --recipe-path recipe.json
+
+# ==============================================================================
+# Stage 3: Rust Builder - Build dependencies (cached) then application
+# ==============================================================================
+FROM chef AS rust-builder
+
+# Copy recipe and cook dependencies (this layer is cached)
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Now copy the actual source code
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+
+# Build generate_types binary (uses cached deps, only compiles app code)
+RUN cargo build --release --bin generate_types
+
+# Build server binary (uses cached deps, only compiles app code)
+RUN cargo build --release --bin server
+
+# ==============================================================================
+# Stage 4: Node Builder - Build frontend with generated types
+# ==============================================================================
+FROM node:24-alpine AS node-builder
+
+WORKDIR /app
 
 ARG POSTHOG_API_KEY
 ARG POSTHOG_API_ENDPOINT
 
 ENV VITE_PUBLIC_POSTHOG_KEY=$POSTHOG_API_KEY
 ENV VITE_PUBLIC_POSTHOG_HOST=$POSTHOG_API_ENDPOINT
-
-# Set working directory
-WORKDIR /app
 
 # Copy package files for dependency caching
 COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -33,13 +70,18 @@ COPY npx-cli/package*.json ./npx-cli/
 # Install pnpm and dependencies
 RUN npm install -g pnpm && pnpm install
 
-# Copy source code
-COPY . .
+# Copy generate_types binary from rust builder
+COPY --from=rust-builder /app/target/release/generate_types /usr/local/bin/generate_types
 
-# Build application
-RUN npm run generate-types
+# Copy source code needed for type generation and frontend build
+COPY shared ./shared
+COPY frontend ./frontend
+
+# Generate TypeScript types
+RUN generate_types
+
+# Build frontend
 RUN cd frontend && pnpm run build
-RUN cargo build --release --bin server
 
 # Runtime stage
 FROM alpine:latest AS runtime
