@@ -85,3 +85,6 @@ dev_assets
 vibe-kanban-cloud/
 
 .jj
+
+# Claude Code MCP config (local development)
+.mcp.json
