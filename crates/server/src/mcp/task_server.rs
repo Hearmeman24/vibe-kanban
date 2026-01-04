@@ -1464,6 +1464,7 @@ impl TaskServer {
         #[derive(Debug, Deserialize)]
         struct ApiBulkUpdateResponse {
             updated_tasks: Vec<Task>,
+            #[allow(dead_code)]
             count: usize,
         }
 
