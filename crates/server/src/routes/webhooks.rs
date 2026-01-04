@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
     middleware::from_fn_with_state,
     response::Json as ResponseJson,
-    routing::{delete, get, post, put},
+    routing::{get, post},
 };
 use db::models::{
     webhook::{CreateWebhook, UpdateWebhook, Webhook, WebhookEvent},
