@@ -83,7 +83,9 @@ RUN generate_types
 # Build frontend
 RUN cd frontend && pnpm run build
 
-# Runtime stage
+# ==============================================================================
+# Stage 5: Runtime - Minimal production image
+# ==============================================================================
 FROM alpine:latest AS runtime
 
 # Install runtime dependencies
@@ -97,8 +99,8 @@ RUN apk add --no-cache \
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Copy binary from builder
-COPY --from=builder /app/target/release/server /usr/local/bin/server
+# Copy server binary from rust builder
+COPY --from=rust-builder /app/target/release/server /usr/local/bin/server
 
 # Create repos directory and set permissions
 RUN mkdir -p /repos && \
