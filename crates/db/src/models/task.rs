@@ -280,6 +280,7 @@ ORDER BY t.created_at DESC"#,
   t.parent_workspace_id,
   t.shared_task_id,
   t.assignee,
+  t.agent_metadata,
   t.created_at,
   t.updated_at,
 
