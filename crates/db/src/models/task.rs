@@ -212,6 +212,163 @@ ORDER BY t.created_at DESC"#,
         Ok(tasks)
     }
 
+    pub async fn find_by_project_id_advanced(
+        pool: &SqlitePool,
+        project_id: Uuid,
+        statuses: Option<Vec<TaskStatus>>,
+        created_after: Option<DateTime<Utc>>,
+        created_before: Option<DateTime<Utc>>,
+        updated_after: Option<DateTime<Utc>>,
+        updated_before: Option<DateTime<Utc>>,
+        sort_by: &str,
+        sort_order: &str,
+        limit: u32,
+        offset: u32,
+    ) -> Result<Vec<TaskWithAttemptStatus>, sqlx::Error> {
+        use sqlx::QueryBuilder;
+
+        let mut query_builder = QueryBuilder::new(
+            r#"SELECT
+  t.id,
+  t.project_id,
+  t.title,
+  t.description,
+  t.status,
+  t.parent_workspace_id,
+  t.shared_task_id,
+  t.created_at,
+  t.updated_at,
+
+  CASE WHEN EXISTS (
+    SELECT 1
+      FROM workspaces w
+      JOIN sessions s ON s.workspace_id = w.id
+      JOIN execution_processes ep ON ep.session_id = s.id
+     WHERE w.task_id       = t.id
+       AND ep.status        = 'running'
+       AND ep.run_reason IN ('setupscript','cleanupscript','codingagent')
+     LIMIT 1
+  ) THEN 1 ELSE 0 END AS has_in_progress_attempt,
+
+  CASE WHEN (
+    SELECT ep.status
+      FROM workspaces w
+      JOIN sessions s ON s.workspace_id = w.id
+      JOIN execution_processes ep ON ep.session_id = s.id
+     WHERE w.task_id       = t.id
+     AND ep.run_reason IN ('setupscript','cleanupscript','codingagent')
+     ORDER BY ep.created_at DESC
+     LIMIT 1
+  ) IN ('failed','killed') THEN 1 ELSE 0 END AS last_attempt_failed,
+
+  COALESCE((
+    SELECT s.executor
+      FROM workspaces w
+      JOIN sessions s ON s.workspace_id = w.id
+      WHERE w.task_id = t.id
+     ORDER BY s.created_at DESC
+      LIMIT 1
+    ), '') AS executor
+
+FROM tasks t
+WHERE t.project_id = "#,
+        );
+
+        query_builder.push_bind(project_id);
+
+        // Add status filters
+        if let Some(ref status_list) = statuses {
+            if !status_list.is_empty() {
+                query_builder.push(" AND t.status IN (");
+                let mut separated = query_builder.separated(", ");
+                for status in status_list {
+                    separated.push_bind(status);
+                }
+                separated.push_unseparated(")");
+            }
+        }
+
+        // Add date filters
+        if let Some(created_after) = created_after {
+            query_builder.push(" AND t.created_at >= ");
+            query_builder.push_bind(created_after);
+        }
+        if let Some(created_before) = created_before {
+            query_builder.push(" AND t.created_at <= ");
+            query_builder.push_bind(created_before);
+        }
+        if let Some(updated_after) = updated_after {
+            query_builder.push(" AND t.updated_at >= ");
+            query_builder.push_bind(updated_after);
+        }
+        if let Some(updated_before) = updated_before {
+            query_builder.push(" AND t.updated_at <= ");
+            query_builder.push_bind(updated_before);
+        }
+
+        // Add sorting
+        query_builder.push(" ORDER BY t.");
+        match sort_by {
+            "created_at" => query_builder.push("created_at"),
+            "updated_at" => query_builder.push("updated_at"),
+            "title" => query_builder.push("title"),
+            _ => query_builder.push("created_at"),
+        };
+        query_builder.push(" ");
+        match sort_order {
+            "asc" => query_builder.push("ASC"),
+            _ => query_builder.push("DESC"),
+        };
+
+        // Add pagination
+        query_builder.push(" LIMIT ");
+        query_builder.push_bind(limit as i64);
+        query_builder.push(" OFFSET ");
+        query_builder.push_bind(offset as i64);
+
+        let query = query_builder.build();
+
+        let records = query.fetch_all(pool).await?;
+
+        let tasks = records
+            .into_iter()
+            .map(|row| {
+                let id: Uuid = row.try_get("id").unwrap_or_default();
+                let project_id: Uuid = row.try_get("project_id").unwrap_or_default();
+                let title: String = row.try_get("title").unwrap_or_default();
+                let description: Option<String> = row.try_get("description").ok();
+                let status: TaskStatus = row.try_get("status").unwrap_or_default();
+                let parent_workspace_id: Option<Uuid> = row.try_get("parent_workspace_id").ok();
+                let shared_task_id: Option<Uuid> = row.try_get("shared_task_id").ok();
+                let created_at: DateTime<Utc> = row.try_get("created_at").unwrap_or_default();
+                let updated_at: DateTime<Utc> = row.try_get("updated_at").unwrap_or_default();
+                let has_in_progress_attempt: i64 =
+                    row.try_get("has_in_progress_attempt").unwrap_or(0);
+                let last_attempt_failed: i64 = row.try_get("last_attempt_failed").unwrap_or(0);
+                let executor: String = row.try_get("executor").unwrap_or_default();
+
+                TaskWithAttemptStatus {
+                    task: Task {
+                        id,
+                        project_id,
+                        title,
+                        description,
+                        status,
+                        parent_workspace_id,
+                        shared_task_id,
+                        created_at,
+                        updated_at,
+                    },
+                    has_in_progress_attempt: has_in_progress_attempt != 0,
+                    last_attempt_failed: last_attempt_failed != 0,
+                    executor,
+                }
+            })
+            .collect();
+
+        Ok(tasks)
+    }
+
     pub async fn find_by_id(pool: &SqlitePool, id: Uuid) -> Result<Option<Self>, sqlx::Error> {
         sqlx::query_as!(
             Task,
