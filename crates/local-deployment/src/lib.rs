@@ -105,13 +105,17 @@ impl Deployment for LocalDeployment {
         let events_msg_store = Arc::new(MsgStore::new());
         let events_entry_count = Arc::new(RwLock::new(0));
 
-        // Create DB with event hooks
+        // Create DB with event hooks and webhook service
         let db = {
+            // Create a temporary DB service for the hook
+            let temp_db = DBService::new().await?;
+            // Create webhook service using the temp pool (same database)
+            let webhook_service = Arc::new(WebhookService::new(temp_db.pool.clone()));
             let hook = EventService::create_hook(
                 events_msg_store.clone(),
                 events_entry_count.clone(),
-                DBService::new().await?, // Temporary DB service for the hook
-                None,                    // No webhook service for local deployment initially
+                temp_db,
+                Some(webhook_service),
             );
             DBService::new_with_after_connect(hook).await?
         };
