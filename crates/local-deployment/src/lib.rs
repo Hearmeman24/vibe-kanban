@@ -110,6 +110,7 @@ impl Deployment for LocalDeployment {
                 events_msg_store.clone(),
                 events_entry_count.clone(),
                 DBService::new().await?, // Temporary DB service for the hook
+                None,                    // No webhook service for local deployment initially
             );
             DBService::new_with_after_connect(hook).await?
         };
