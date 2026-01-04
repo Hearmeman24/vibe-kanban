@@ -21,6 +21,7 @@ use services::services::{
     remote_client::{RemoteClient, RemoteClientError},
     repo::RepoService,
     share::{ShareConfig, SharePublisher},
+    webhooks::WebhookService,
 };
 use tokio::sync::RwLock;
 use utils::{
