@@ -100,8 +100,8 @@ impl EventService {
     + Sync
     + 'static {
         // Shared map to track old task status for detecting status changes
-        // Key: (rowid), Value: (task_id, project_id, old_status)
-        let old_task_status_map: Arc<std::sync::RwLock<HashMap<i64, (Uuid, Uuid, String)>>> =
+        // Key: task_id, Value: (project_id, old_status)
+        let old_task_status_map: Arc<std::sync::RwLock<HashMap<Uuid, (Uuid, String)>>> =
             Arc::new(std::sync::RwLock::new(HashMap::new()));
 
         move |conn: &mut sqlx::sqlite::SqliteConnection| {
