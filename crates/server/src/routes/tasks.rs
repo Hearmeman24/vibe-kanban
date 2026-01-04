@@ -701,11 +701,22 @@ pub async fn bulk_update_tasks(
     })))
 }
 
+pub async fn get_task_relationships(
+    Extension(task): Extension<Task>,
+    State(deployment): State<DeploymentImpl>,
+) -> Result<ResponseJson<ApiResponse<TaskRelationshipsSimple>>, ApiError> {
+    let relationships =
+        Task::find_relationships_for_task(&deployment.db().pool, task.id).await?;
+
+    Ok(ResponseJson(ApiResponse::success(relationships)))
+}
+
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let task_actions_router = Router::new()
         .route("/", put(update_task))
         .route("/", delete(delete_task))
-        .route("/share", post(share_task));
+        .route("/share", post(share_task))
+        .route("/relationships", get(get_task_relationships));
 
     let task_id_router = Router::new()
         .route("/", get(get_task))
