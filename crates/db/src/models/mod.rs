@@ -12,5 +12,6 @@ pub mod session;
 pub mod tag;
 pub mod task;
 pub mod task_comment;
+pub mod task_history;
 pub mod workspace;
 pub mod workspace_repo;
