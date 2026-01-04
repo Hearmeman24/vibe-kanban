@@ -13,5 +13,7 @@ pub mod tag;
 pub mod task;
 pub mod task_comment;
 pub mod task_history;
+pub mod webhook;
+pub mod webhook_delivery;
 pub mod workspace;
 pub mod workspace_repo;
