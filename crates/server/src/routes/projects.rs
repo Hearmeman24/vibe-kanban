@@ -17,6 +17,7 @@ use db::models::{
     project_repo::{CreateProjectRepo, ProjectRepo, UpdateProjectRepo},
     repo::Repo,
 };
+use super::webhooks;
 use deployment::Deployment;
 use futures_util::{SinkExt, StreamExt, TryStreamExt};
 use serde::Deserialize;
