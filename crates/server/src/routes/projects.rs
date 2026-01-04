@@ -601,6 +601,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
             "/repositories",
             get(get_project_repositories).post(add_project_repository),
         )
+        .merge(webhooks::project_webhooks_router())
         .layer(from_fn_with_state(
             deployment.clone(),
             load_project_middleware,
