@@ -140,6 +140,14 @@ export function TaskCard({
               : task.description}
           </p>
         )}
+        {task.assignee && (
+          <div className="flex items-center gap-1 mt-1">
+            <Badge variant="secondary" className="text-xs py-0 px-1.5 gap-1">
+              <User className="h-3 w-3" />
+              {task.assignee}
+            </Badge>
+          </div>
+        )}
       </div>
     </KanbanCard>
   );
