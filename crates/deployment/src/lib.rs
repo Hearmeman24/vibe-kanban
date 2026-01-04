@@ -32,6 +32,7 @@ use services::services::{
     queued_message::QueuedMessageService,
     repo::RepoService,
     share::SharePublisher,
+    webhook_worker::WebhookWorkerService,
     worktree_manager::WorktreeError,
 };
 use sqlx::Error as SqlxError;
