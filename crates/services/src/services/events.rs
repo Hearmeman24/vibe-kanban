@@ -322,7 +322,7 @@ impl EventService {
 
                                         // Trigger webhooks for task changes
                                         if let Some(ref webhook_svc) = webhook_service {
-                                            let task_data = serde_json::to_value(&task).unwrap_or_default();
+                                            let task_data = serde_json::to_value(task).unwrap_or_default();
 
                                             match hook.operation {
                                                 SqliteOperation::Insert => {
