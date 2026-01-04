@@ -707,85 +707,54 @@ impl TaskServer {
     ) -> Result<CallToolResult, ErrorData> {
         use chrono::DateTime;
 
-        // Parse and validate statuses
-        let status_filters = if let Some(ref status_strs) = statuses {
-            let mut parsed_statuses = Vec::new();
+        // Validate statuses
+        if let Some(ref status_strs) = statuses {
             for status_str in status_strs {
-                match TaskStatus::from_str(status_str) {
-                    Ok(s) => parsed_statuses.push(s),
-                    Err(_) => {
-                        return Self::err(
-                            "Invalid status value. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'".to_string(),
-                            Some(status_str.to_string()),
-                        );
-                    }
-                }
-            }
-            if parsed_statuses.is_empty() {
-                None
-            } else {
-                Some(parsed_statuses)
-            }
-        } else {
-            None
-        };
-
-        // Parse date filters
-        let created_after_dt = if let Some(ref ts) = created_after {
-            match DateTime::parse_from_rfc3339(ts) {
-                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
-                Err(_) => {
+                if TaskStatus::from_str(status_str).is_err() {
                     return Self::err(
-                        "Invalid created_after timestamp. Use RFC3339 format".to_string(),
-                        Some(ts.to_string()),
+                        "Invalid status value. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'".to_string(),
+                        Some(status_str.to_string()),
                     );
                 }
             }
-        } else {
-            None
-        };
+        }
 
-        let created_before_dt = if let Some(ref ts) = created_before {
-            match DateTime::parse_from_rfc3339(ts) {
-                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
-                Err(_) => {
-                    return Self::err(
-                        "Invalid created_before timestamp. Use RFC3339 format".to_string(),
-                        Some(ts.to_string()),
-                    );
-                }
+        // Validate date filters
+        if let Some(ref ts) = created_after {
+            if DateTime::parse_from_rfc3339(ts).is_err() {
+                return Self::err(
+                    "Invalid created_after timestamp. Use RFC3339 format".to_string(),
+                    Some(ts.to_string()),
+                );
             }
-        } else {
-            None
-        };
+        }
 
-        let updated_after_dt = if let Some(ref ts) = updated_after {
-            match DateTime::parse_from_rfc3339(ts) {
-                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
-                Err(_) => {
-                    return Self::err(
-                        "Invalid updated_after timestamp. Use RFC3339 format".to_string(),
-                        Some(ts.to_string()),
-                    );
-                }
+        if let Some(ref ts) = created_before {
+            if DateTime::parse_from_rfc3339(ts).is_err() {
+                return Self::err(
+                    "Invalid created_before timestamp. Use RFC3339 format".to_string(),
+                    Some(ts.to_string()),
+                );
             }
-        } else {
-            None
-        };
+        }
 
-        let updated_before_dt = if let Some(ref ts) = updated_before {
-            match DateTime::parse_from_rfc3339(ts) {
-                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
-                Err(_) => {
-                    return Self::err(
-                        "Invalid updated_before timestamp. Use RFC3339 format".to_string(),
-                        Some(ts.to_string()),
-                    );
-                }
+        if let Some(ref ts) = updated_after {
+            if DateTime::parse_from_rfc3339(ts).is_err() {
+                return Self::err(
+                    "Invalid updated_after timestamp. Use RFC3339 format".to_string(),
+                    Some(ts.to_string()),
+                );
             }
-        } else {
-            None
-        };
+        }
+
+        if let Some(ref ts) = updated_before {
+            if DateTime::parse_from_rfc3339(ts).is_err() {
+                return Self::err(
+                    "Invalid updated_before timestamp. Use RFC3339 format".to_string(),
+                    Some(ts.to_string()),
+                );
+            }
+        }
 
         // Validate and set defaults for pagination and sorting
         let task_limit = limit.unwrap_or(50).max(1).min(500);
