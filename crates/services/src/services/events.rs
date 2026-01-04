@@ -1,9 +1,11 @@
-use std::{str::FromStr, sync::Arc};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use db::{
     DBService,
     models::{
-        execution_process::ExecutionProcess, project::Project, scratch::Scratch, task::Task,
+        execution_process::ExecutionProcess, project::Project, scratch::Scratch,
+        task::{Task, TaskStatus},
+        webhook::WebhookEvent,
         workspace::Workspace,
     },
 };
@@ -12,6 +14,8 @@ use sqlx::{Error as SqlxError, Sqlite, SqlitePool, decode::Decode, sqlite::Sqlit
 use tokio::sync::RwLock;
 use utils::msg_store::MsgStore;
 use uuid::Uuid;
+
+use super::webhooks::WebhookService;
 
 #[path = "events/patches.rs"]
 pub mod patches;
