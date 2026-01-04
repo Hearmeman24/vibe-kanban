@@ -95,7 +95,7 @@ COPY --from=node-builder /app/frontend/dist ./frontend/dist
 RUN cargo build --release --bin server
 
 # ==============================================================================
-# Stage 5: Runtime - Minimal production image
+# Stage 6: Runtime - Minimal production image
 # ==============================================================================
 FROM alpine:latest AS runtime
 
