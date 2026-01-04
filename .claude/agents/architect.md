@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Planning agent for designing implementation approaches. Use when a task needs design decisions or architectural planning. Plans only - does not implement.
-model: sonnet
+model: opus
 tools: Read, Glob, Grep, LSP, WebFetch, mcp__context7__*, mcp__github__*
 ---
 
