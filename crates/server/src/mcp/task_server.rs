@@ -384,6 +384,22 @@ pub struct AssignTaskResponse {
     pub task: TaskDetails,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct BulkUpdateTasksRequest {
+    #[schemars(description = "Array of task IDs to update. This is required!")]
+    pub task_ids: Vec<Uuid>,
+    #[schemars(
+        description = "New status for all tasks: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'. This is required!"
+    )]
+    pub status: String,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct BulkUpdateTasksResponse {
+    pub updated_tasks: Vec<TaskDetails>,
+    pub count: usize,
+}
+
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 pub struct TaskHistorySummary {
     #[schemars(description = "The unique identifier of the history entry")]
