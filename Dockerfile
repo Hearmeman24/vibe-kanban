@@ -42,6 +42,8 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Now copy the actual source code
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
+# Assets are embedded at compile time via rust-embed
+COPY assets ./assets
 
 # Build generate_types binary (uses cached deps, only compiles app code)
 RUN cargo build --release --bin generate_types
