@@ -120,6 +120,7 @@ pub struct UpdateTask {
     pub status: Option<TaskStatus>,
     pub parent_workspace_id: Option<Uuid>,
     pub image_ids: Option<Vec<Uuid>>,
+    pub assignee: Option<String>,
 }
 
 impl Task {
