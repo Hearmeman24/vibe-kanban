@@ -29,6 +29,7 @@ import {
   TaskRelationships,
   Tag,
   TagSearchParams,
+  TaskHistory,
   TaskWithAttemptStatus,
   UpdateProject,
   UpdateTask,
