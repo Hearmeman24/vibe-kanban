@@ -27,6 +27,7 @@ pub mod task_attempts;
 pub mod task_comments;
 pub mod task_history;
 pub mod tasks;
+pub mod webhooks;
 
 pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
     // Create routers with different middleware layers
