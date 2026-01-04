@@ -123,21 +123,18 @@ impl EventService {
                         // For task updates, capture the old status before it changes
                         if preupdate.operation == SqliteOperation::Update
                             && preupdate.table == "tasks"
+                            && let Ok(id_val) = preupdate.get_old_column_value(0)
+                            && let Ok(task_id) = <Uuid as Decode<Sqlite>>::decode(id_val)
+                            && let Ok(project_id_val) = preupdate.get_old_column_value(1)
+                            && let Ok(project_id) =
+                                <Uuid as Decode<Sqlite>>::decode(project_id_val)
+                            && let Ok(status_val) = preupdate.get_old_column_value(4)
+                            && let Ok(old_status) =
+                                <String as Decode<Sqlite>>::decode(status_val)
+                            && let Ok(mut map) = old_status_map_for_preupdate.write()
                         {
                             // Column indices: 0=id, 1=project_id, 4=status
-                            if let Ok(id_val) = preupdate.get_old_column_value(0)
-                                && let Ok(task_id) = <Uuid as Decode<Sqlite>>::decode(id_val)
-                                && let Ok(project_id_val) = preupdate.get_old_column_value(1)
-                                && let Ok(project_id) =
-                                    <Uuid as Decode<Sqlite>>::decode(project_id_val)
-                                && let Ok(status_val) = preupdate.get_old_column_value(4)
-                                && let Ok(old_status) =
-                                    <String as Decode<Sqlite>>::decode(status_val)
-                            {
-                                if let Ok(mut map) = old_status_map_for_preupdate.write() {
-                                    map.insert(task_id, (project_id, old_status));
-                                }
-                            }
+                            map.insert(task_id, (project_id, old_status));
                         }
 
                         // Handle deletes as before
