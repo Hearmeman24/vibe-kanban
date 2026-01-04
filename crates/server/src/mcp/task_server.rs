@@ -103,6 +103,32 @@ pub struct ListTasksRequest {
     pub limit: Option<i32>,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct ListTasksAdvancedRequest {
+    #[schemars(description = "The ID of the project to list tasks from. This is required!")]
+    pub project_id: Uuid,
+    #[schemars(
+        description = "Filter by multiple statuses: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'"
+    )]
+    pub statuses: Option<Vec<String>>,
+    #[schemars(description = "Filter tasks created after this timestamp (RFC3339 format)")]
+    pub created_after: Option<String>,
+    #[schemars(description = "Filter tasks created before this timestamp (RFC3339 format)")]
+    pub created_before: Option<String>,
+    #[schemars(description = "Filter tasks updated after this timestamp (RFC3339 format)")]
+    pub updated_after: Option<String>,
+    #[schemars(description = "Filter tasks updated before this timestamp (RFC3339 format)")]
+    pub updated_before: Option<String>,
+    #[schemars(description = "Maximum number of tasks to return (default: 50)")]
+    pub limit: Option<u32>,
+    #[schemars(description = "Number of tasks to skip for pagination (default: 0)")]
+    pub offset: Option<u32>,
+    #[schemars(description = "Field to sort by: 'created_at', 'updated_at', 'title' (default: 'created_at')")]
+    pub sort_by: Option<String>,
+    #[schemars(description = "Sort order: 'asc' or 'desc' (default: 'desc')")]
+    pub sort_order: Option<String>,
+}
+
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 pub struct TaskSummary {
     #[schemars(description = "The unique identifier of the task")]
