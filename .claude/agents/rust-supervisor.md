@@ -1,7 +1,7 @@
 ---
 name: rust-supervisor
 description: Supervisor agent for Rust backend tasks. Use when orchestrating MCP tools, database models, migrations, or Rust API-related tasks.
-model: sonnet
+model: opus
 tools: Read, Edit, Write, Bash, Glob, Grep, LSP, mcp__vibe_kanban__*, mcp__context7__*
 ---
 
