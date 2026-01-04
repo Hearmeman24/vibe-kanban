@@ -16,7 +16,7 @@ use db::models::{
     image::TaskImage,
     project::{Project, ProjectError},
     repo::Repo,
-    task::{CreateTask, Task, TaskRelationshipsSimple, TaskWithAttemptStatus, UpdateTask},
+    task::{AgentMetadataEntry, CreateTask, Task, TaskRelationshipsSimple, TaskWithAttemptStatus, UpdateTask},
     workspace::{CreateWorkspace, Workspace},
     workspace_repo::{CreateWorkspaceRepo, WorkspaceRepo},
 };
