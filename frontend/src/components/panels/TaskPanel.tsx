@@ -8,10 +8,13 @@ import type { TaskWithAttemptStatus } from 'shared/types';
 import type { WorkspaceWithSession } from '@/types/attempt';
 import { NewCardContent } from '../ui/new-card';
 import { Button } from '../ui/button';
-import { PlusIcon } from 'lucide-react';
+import { PlusIcon, User } from 'lucide-react';
 import { CreateAttemptDialog } from '@/components/dialogs/tasks/CreateAttemptDialog';
 import WYSIWYGEditor from '@/components/ui/wysiwyg';
 import { DataTable, type ColumnDef } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { TaskCommentsSection } from '@/components/tasks/TaskCommentsSection';
+import { TaskHistorySection } from '@/components/tasks/TaskHistorySection';
 
 interface TaskPanelProps {
   task: TaskWithAttemptStatus | null;
