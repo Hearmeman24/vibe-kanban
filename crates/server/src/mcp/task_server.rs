@@ -171,6 +171,8 @@ pub struct TaskDetails {
     pub description: Option<String>,
     #[schemars(description = "Current status of the task")]
     pub status: String,
+    #[schemars(description = "The assignee of the task (agent or user name)")]
+    pub assignee: Option<String>,
     #[schemars(description = "When the task was created")]
     pub created_at: String,
     #[schemars(description = "When the task was last updated")]
