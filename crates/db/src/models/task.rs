@@ -494,6 +494,70 @@ WHERE t.project_id = "#,
         Ok(())
     }
 
+    /// Update the status of multiple tasks at once.
+    /// Returns the updated tasks.
+    pub async fn bulk_update_status(
+        pool: &SqlitePool,
+        task_ids: &[Uuid],
+        status: TaskStatus,
+    ) -> Result<Vec<Task>, sqlx::Error> {
+        if task_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        use sqlx::QueryBuilder;
+
+        // First update the tasks
+        let mut update_builder: QueryBuilder<Sqlite> = QueryBuilder::new(
+            "UPDATE tasks SET status = ",
+        );
+        update_builder.push_bind(&status);
+        update_builder.push(", updated_at = CURRENT_TIMESTAMP WHERE id IN (");
+
+        let mut separated = update_builder.separated(", ");
+        for id in task_ids {
+            separated.push_bind(id);
+        }
+        separated.push_unseparated(")");
+
+        update_builder.build().execute(pool).await?;
+
+        // Then fetch and return the updated tasks
+        let mut select_builder: QueryBuilder<Sqlite> = QueryBuilder::new(
+            r#"SELECT id, project_id, title, description, status, parent_workspace_id, shared_task_id, assignee, created_at, updated_at
+               FROM tasks WHERE id IN ("#,
+        );
+
+        let mut separated = select_builder.separated(", ");
+        for id in task_ids {
+            separated.push_bind(id);
+        }
+        separated.push_unseparated(")");
+
+        let rows = select_builder.build().fetch_all(pool).await?;
+
+        use sqlx::Row;
+        let tasks = rows
+            .into_iter()
+            .map(|row| {
+                Task {
+                    id: row.try_get("id").unwrap_or_default(),
+                    project_id: row.try_get("project_id").unwrap_or_default(),
+                    title: row.try_get("title").unwrap_or_default(),
+                    description: row.try_get("description").ok().flatten(),
+                    status: row.try_get("status").unwrap_or_default(),
+                    parent_workspace_id: row.try_get("parent_workspace_id").ok().flatten(),
+                    shared_task_id: row.try_get("shared_task_id").ok().flatten(),
+                    assignee: row.try_get("assignee").ok().flatten(),
+                    created_at: row.try_get("created_at").unwrap_or_default(),
+                    updated_at: row.try_get("updated_at").unwrap_or_default(),
+                }
+            })
+            .collect();
+
+        Ok(tasks)
+    }
+
     /// Update the parent_workspace_id field for a task
     pub async fn update_parent_workspace_id(
         pool: &SqlitePool,
