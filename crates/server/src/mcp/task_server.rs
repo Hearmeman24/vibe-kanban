@@ -1295,12 +1295,68 @@ impl TaskServer {
         let response = AssignTaskResponse { task: details };
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Search tasks by text in title and description. Returns matching tasks with details. `project_id` and `query` are required!"
+    )]
+    async fn search_tasks(
+        &self,
+        Parameters(SearchTasksRequest {
+            project_id,
+            query,
+            limit,
+            offset,
+        }): Parameters<SearchTasksRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let search_query = query.trim();
+        if search_query.is_empty() {
+            return Self::err(
+                "Search query cannot be empty".to_string(),
+                None::<String>,
+            );
+        }
+
+        let task_limit = limit.unwrap_or(50).max(1).min(500);
+        let task_offset = offset.unwrap_or(0);
+
+        let url = self.url("/api/tasks/search");
+        let query_params = vec![
+            ("project_id", project_id.to_string()),
+            ("q", search_query.to_string()),
+            ("limit", task_limit.to_string()),
+            ("offset", task_offset.to_string()),
+        ];
+
+        let tasks: Vec<Task> = match self
+            .send_json(self.client.get(&url).query(&query_params))
+            .await
+        {
+            Ok(t) => t,
+            Err(e) => return Ok(e),
+        };
+
+        let task_details: Vec<TaskDetails> = tasks
+            .into_iter()
+            .map(TaskDetails::from_task)
+            .collect();
+
+        let response = SearchTasksResponse {
+            count: task_details.len(),
+            tasks: task_details,
+            project_id: project_id.to_string(),
+            query: search_query.to_string(),
+            limit: task_limit,
+            offset: task_offset,
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
 impl ServerHandler for TaskServer {
     fn get_info(&self) -> ServerInfo {
-        let mut instruction = "A task and project management server. If you need to create or update tickets or tasks then use these tools. Most of them absolutely require that you pass the `project_id` of the project that you are currently working on. You can get project ids by using `list projects`. Call `list_tasks` to fetch the `task_ids` of all the tasks in a project. For advanced filtering, sorting, and pagination, use `list_tasks_advanced`. TOOLS: 'list_projects', 'list_tasks', 'list_tasks_advanced', 'create_task', 'start_workspace_session', 'get_task', 'update_task', 'delete_task', 'list_repos', 'add_task_comment', 'get_task_comments', 'get_task_history', 'assign_task'. Make sure to pass `project_id` or `task_id` where required. You can use list tools to get the available ids.".to_string();
+        let mut instruction = "A task and project management server. If you need to create or update tickets or tasks then use these tools. Most of them absolutely require that you pass the `project_id` of the project that you are currently working on. You can get project ids by using `list projects`. Call `list_tasks` to fetch the `task_ids` of all the tasks in a project. For advanced filtering, sorting, and pagination, use `list_tasks_advanced`. Use `search_tasks` to find tasks by keyword in title or description. TOOLS: 'list_projects', 'list_tasks', 'list_tasks_advanced', 'search_tasks', 'create_task', 'start_workspace_session', 'get_task', 'update_task', 'delete_task', 'list_repos', 'add_task_comment', 'get_task_comments', 'get_task_history', 'assign_task'. Make sure to pass `project_id` or `task_id` where required. You can use list tools to get the available ids.".to_string();
         if self.context.is_some() {
             let context_instruction = "Use 'get_context' to fetch project/task/workspace metadata for the active Vibe Kanban workspace session when available.";
             instruction = format!("{} {}", context_instruction, instruction);
