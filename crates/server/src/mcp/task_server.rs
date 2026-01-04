@@ -357,6 +357,28 @@ pub struct AssignTaskRequest {
     pub assignee: Option<String>,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct SearchTasksRequest {
+    #[schemars(description = "The ID of the project to search tasks in. This is required!")]
+    pub project_id: Uuid,
+    #[schemars(description = "The search query string to match against task titles and descriptions. This is required!")]
+    pub query: String,
+    #[schemars(description = "Maximum number of tasks to return (default: 50, max: 500)")]
+    pub limit: Option<u32>,
+    #[schemars(description = "Number of tasks to skip for pagination (default: 0)")]
+    pub offset: Option<u32>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct SearchTasksResponse {
+    pub tasks: Vec<TaskDetails>,
+    pub count: usize,
+    pub project_id: String,
+    pub query: String,
+    pub limit: u32,
+    pub offset: u32,
+}
+
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 pub struct AssignTaskResponse {
     pub task: TaskDetails,
