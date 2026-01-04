@@ -7,6 +7,32 @@ use uuid::Uuid;
 
 use super::{project::Project, workspace::Workspace};
 
+/// Represents a single entry in the agent metadata history for a task.
+/// Tracks which agent performed what action on the task and when.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+pub struct AgentMetadataEntry {
+    /// The name of the agent (e.g., "Ferris", "Miley", "Bree")
+    pub agent_name: String,
+    /// The action performed: "started", "completed", "updated", "commented"
+    pub action: String,
+    /// ISO 8601 timestamp when the action occurred
+    pub timestamp: String,
+    /// Optional summary of what the agent did
+    pub summary: Option<String>,
+}
+
+impl AgentMetadataEntry {
+    /// Create a new AgentMetadataEntry with the current timestamp
+    pub fn new(agent_name: String, action: String, summary: Option<String>) -> Self {
+        Self {
+            agent_name,
+            action,
+            timestamp: Utc::now().to_rfc3339(),
+            summary,
+        }
+    }
+}
+
 #[derive(
     Debug, Clone, Type, Serialize, Deserialize, PartialEq, TS, EnumString, Display, Default,
 )]
