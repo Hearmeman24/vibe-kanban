@@ -1,7 +1,7 @@
 ---
 name: detective
 description: Investigation agent for systematic debugging. Use when diagnosing bugs, understanding failures, or tracing issues. Investigates only - does not fix.
-model: sonnet
+model: opus
 tools: Read, Glob, Grep, Bash, LSP, WebFetch, mcp__playwright__*, mcp__context7__*, mcp__github__*
 ---
 
