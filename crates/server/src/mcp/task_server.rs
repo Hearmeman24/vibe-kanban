@@ -1367,6 +1367,62 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Update the status of multiple tasks at once. `task_ids` (array) and `status` are required!"
+    )]
+    async fn bulk_update_tasks(
+        &self,
+        Parameters(BulkUpdateTasksRequest { task_ids, status }): Parameters<BulkUpdateTasksRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        if task_ids.is_empty() {
+            return Self::err(
+                "task_ids array cannot be empty".to_string(),
+                None::<String>,
+            );
+        }
+
+        // Validate status
+        let status_trimmed = status.trim();
+        if TaskStatus::from_str(status_trimmed).is_err() {
+            return Self::err(
+                "Invalid status. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'"
+                    .to_string(),
+                Some(status.clone()),
+            );
+        }
+
+        let url = self.url("/api/tasks/bulk-update");
+        let payload = serde_json::json!({
+            "task_ids": task_ids,
+            "status": status_trimmed
+        });
+
+        #[derive(Debug, Deserialize)]
+        struct ApiBulkUpdateResponse {
+            updated_tasks: Vec<Task>,
+            count: usize,
+        }
+
+        let api_response: ApiBulkUpdateResponse =
+            match self.send_json(self.client.post(&url).json(&payload)).await {
+                Ok(r) => r,
+                Err(e) => return Ok(e),
+            };
+
+        let task_details: Vec<TaskDetails> = api_response
+            .updated_tasks
+            .into_iter()
+            .map(TaskDetails::from_task)
+            .collect();
+
+        let response = BulkUpdateTasksResponse {
+            count: task_details.len(),
+            updated_tasks: task_details,
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
