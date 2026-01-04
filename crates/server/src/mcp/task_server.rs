@@ -1175,6 +1175,53 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Get the change history for a task. Returns all modifications made to the task including field changes, who made them, and when. `task_id` is required!"
+    )]
+    async fn get_task_history(
+        &self,
+        Parameters(GetTaskHistoryRequest { task_id }): Parameters<GetTaskHistoryRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let url = self.url(&format!("/api/tasks/{}/history", task_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiHistory {
+            id: Uuid,
+            task_id: Uuid,
+            field_changed: String,
+            old_value: Option<String>,
+            new_value: Option<String>,
+            changed_by: String,
+            changed_at: chrono::DateTime<chrono::Utc>,
+        }
+
+        let history: Vec<ApiHistory> = match self.send_json(self.client.get(&url)).await {
+            Ok(h) => h,
+            Err(e) => return Ok(e),
+        };
+
+        let history_summaries: Vec<TaskHistorySummary> = history
+            .into_iter()
+            .map(|h| TaskHistorySummary {
+                id: h.id.to_string(),
+                task_id: h.task_id.to_string(),
+                field_changed: h.field_changed,
+                old_value: h.old_value,
+                new_value: h.new_value,
+                changed_by: h.changed_by,
+                changed_at: h.changed_at.to_rfc3339(),
+            })
+            .collect();
+
+        let response = GetTaskHistoryResponse {
+            count: history_summaries.len(),
+            history: history_summaries,
+            task_id: task_id.to_string(),
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
