@@ -322,6 +322,85 @@ impl EventService {
                                             _ => task_patch::replace(&task_with_status), // fallback
                                         };
                                         msg_store_for_hook.push_patch(patch);
+
+                                        // Trigger webhooks for task changes
+                                        if let Some(ref webhook_svc) = webhook_service {
+                                            let task_data = serde_json::to_value(&task).unwrap_or_default();
+
+                                            match hook.operation {
+                                                SqliteOperation::Insert => {
+                                                    // Task created
+                                                    if let Err(e) = webhook_svc
+                                                        .trigger_event(
+                                                            task.project_id,
+                                                            &WebhookEvent::TaskCreated,
+                                                            task_data,
+                                                        )
+                                                        .await
+                                                    {
+                                                        tracing::error!(
+                                                            "Failed to trigger TaskCreated webhook: {:?}",
+                                                            e
+                                                        );
+                                                    }
+                                                }
+                                                SqliteOperation::Update => {
+                                                    // Check if status changed to Done (task completed)
+                                                    let old_status_opt = old_status_map
+                                                        .read()
+                                                        .ok()
+                                                        .and_then(|map| map.get(&rowid).cloned());
+
+                                                    // Clean up the old status entry
+                                                    if let Ok(mut map) = old_status_map.write() {
+                                                        map.remove(&rowid);
+                                                    }
+
+                                                    // Trigger TaskUpdated
+                                                    if let Err(e) = webhook_svc
+                                                        .trigger_event(
+                                                            task.project_id,
+                                                            &WebhookEvent::TaskUpdated,
+                                                            task_data.clone(),
+                                                        )
+                                                        .await
+                                                    {
+                                                        tracing::error!(
+                                                            "Failed to trigger TaskUpdated webhook: {:?}",
+                                                            e
+                                                        );
+                                                    }
+
+                                                    // Check if task was completed (status changed to Done)
+                                                    if task.status == TaskStatus::Done {
+                                                        // Only trigger TaskCompleted if old status was not Done
+                                                        let was_already_done = old_status_opt
+                                                            .as_ref()
+                                                            .is_some_and(|(_, _, old_status)| {
+                                                                old_status == "done"
+                                                            });
+
+                                                        if !was_already_done {
+                                                            if let Err(e) = webhook_svc
+                                                                .trigger_event(
+                                                                    task.project_id,
+                                                                    &WebhookEvent::TaskCompleted,
+                                                                    task_data,
+                                                                )
+                                                                .await
+                                                            {
+                                                                tracing::error!(
+                                                                    "Failed to trigger TaskCompleted webhook: {:?}",
+                                                                    e
+                                                                );
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                _ => {}
+                                            }
+                                        }
+
                                         return;
                                     }
                                 }
