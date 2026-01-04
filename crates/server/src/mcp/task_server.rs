@@ -340,6 +340,37 @@ pub struct GetTaskCommentsResponse {
     pub task_id: String,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GetTaskHistoryRequest {
+    #[schemars(description = "The ID of the task to get change history for")]
+    pub task_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct TaskHistorySummary {
+    #[schemars(description = "The unique identifier of the history entry")]
+    pub id: String,
+    #[schemars(description = "The ID of the task this history entry belongs to")]
+    pub task_id: String,
+    #[schemars(description = "The field that was changed")]
+    pub field_changed: String,
+    #[schemars(description = "The previous value of the field (null for creates)")]
+    pub old_value: Option<String>,
+    #[schemars(description = "The new value of the field (null for deletes)")]
+    pub new_value: Option<String>,
+    #[schemars(description = "Who or what made the change")]
+    pub changed_by: String,
+    #[schemars(description = "When the change was made")]
+    pub changed_at: String,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct GetTaskHistoryResponse {
+    pub history: Vec<TaskHistorySummary>,
+    pub count: usize,
+    pub task_id: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct TaskServer {
     client: reqwest::Client,
