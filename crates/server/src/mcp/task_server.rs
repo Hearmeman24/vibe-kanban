@@ -1238,6 +1238,40 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Assign a task to an agent or user. Pass assignee as the name/identifier. Pass null/None to unassign. `task_id` is required!"
+    )]
+    async fn assign_task(
+        &self,
+        Parameters(AssignTaskRequest { task_id, assignee }): Parameters<AssignTaskRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Validate assignee: if provided, must not be empty/whitespace-only
+        let assignee = match assignee {
+            Some(s) if s.trim().is_empty() => None, // Empty string = unassign
+            Some(s) => Some(s),                     // Non-empty string = assign
+            None => None,                           // Null = unassign
+        };
+
+        let payload = UpdateTask {
+            title: None,
+            description: None,
+            status: None,
+            parent_workspace_id: None,
+            image_ids: None,
+            assignee: assignee.clone(),
+        };
+
+        let url = self.url(&format!("/api/tasks/{}", task_id));
+        let updated_task: Task = match self.send_json(self.client.put(&url).json(&payload)).await {
+            Ok(t) => t,
+            Err(e) => return Ok(e),
+        };
+
+        let details = TaskDetails::from_task(updated_task);
+        let response = AssignTaskResponse { task: details };
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
