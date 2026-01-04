@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KanbanCard } from '@/components/ui/shadcn-io/kanban';
-import { Link, Loader2, XCircle } from 'lucide-react';
+import { Link, Loader2, XCircle, User } from 'lucide-react';
 import type { TaskWithAttemptStatus } from 'shared/types';
 import { ActionsDropdown } from '@/components/ui/actions-dropdown';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import type { SharedTaskRecord } from '@/hooks/useProjectTasks';
 import { TaskCardHeader } from './TaskCardHeader';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks';
+import { Badge } from '@/components/ui/badge';
 
 type Task = TaskWithAttemptStatus;
 
