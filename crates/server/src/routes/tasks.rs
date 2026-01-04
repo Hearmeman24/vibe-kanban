@@ -42,6 +42,20 @@ pub struct TaskQuery {
     pub project_id: Uuid,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TaskQueryAdvanced {
+    pub project_id: Uuid,
+    pub statuses: Option<Vec<String>>,
+    pub created_after: Option<String>,
+    pub created_before: Option<String>,
+    pub updated_after: Option<String>,
+    pub updated_before: Option<String>,
+    pub limit: Option<u32>,
+    pub offset: Option<u32>,
+    pub sort_by: Option<String>,
+    pub sort_order: Option<String>,
+}
+
 pub async fn get_tasks(
     State(deployment): State<DeploymentImpl>,
     Query(query): Query<TaskQuery>,
@@ -49,6 +63,132 @@ pub async fn get_tasks(
     let tasks =
         Task::find_by_project_id_with_attempt_status(&deployment.db().pool, query.project_id)
             .await?;
+
+    Ok(ResponseJson(ApiResponse::success(tasks)))
+}
+
+pub async fn get_tasks_advanced(
+    State(deployment): State<DeploymentImpl>,
+    Query(query): Query<TaskQueryAdvanced>,
+) -> Result<ResponseJson<ApiResponse<Vec<TaskWithAttemptStatus>>>, ApiError> {
+    use chrono::DateTime;
+    use db::models::task::TaskStatus;
+    use std::str::FromStr;
+
+    // Parse statuses
+    let status_filters = if let Some(ref status_strs) = query.statuses {
+        let mut parsed = Vec::new();
+        for s in status_strs {
+            match TaskStatus::from_str(s) {
+                Ok(status) => parsed.push(status),
+                Err(_) => {
+                    return Err(ApiError::BadRequest(format!(
+                        "Invalid status: '{}'. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'",
+                        s
+                    )));
+                }
+            }
+        }
+        if parsed.is_empty() {
+            None
+        } else {
+            Some(parsed)
+        }
+    } else {
+        None
+    };
+
+    // Parse date filters
+    let created_after = if let Some(ref ts) = query.created_after {
+        match DateTime::parse_from_rfc3339(ts) {
+            Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+            Err(_) => {
+                return Err(ApiError::BadRequest(format!(
+                    "Invalid created_after timestamp: '{}'. Use RFC3339 format",
+                    ts
+                )));
+            }
+        }
+    } else {
+        None
+    };
+
+    let created_before = if let Some(ref ts) = query.created_before {
+        match DateTime::parse_from_rfc3339(ts) {
+            Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+            Err(_) => {
+                return Err(ApiError::BadRequest(format!(
+                    "Invalid created_before timestamp: '{}'. Use RFC3339 format",
+                    ts
+                )));
+            }
+        }
+    } else {
+        None
+    };
+
+    let updated_after = if let Some(ref ts) = query.updated_after {
+        match DateTime::parse_from_rfc3339(ts) {
+            Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+            Err(_) => {
+                return Err(ApiError::BadRequest(format!(
+                    "Invalid updated_after timestamp: '{}'. Use RFC3339 format",
+                    ts
+                )));
+            }
+        }
+    } else {
+        None
+    };
+
+    let updated_before = if let Some(ref ts) = query.updated_before {
+        match DateTime::parse_from_rfc3339(ts) {
+            Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+            Err(_) => {
+                return Err(ApiError::BadRequest(format!(
+                    "Invalid updated_before timestamp: '{}'. Use RFC3339 format",
+                    ts
+                )));
+            }
+        }
+    } else {
+        None
+    };
+
+    // Set defaults and validate pagination/sorting
+    let limit = query.limit.unwrap_or(50).max(1).min(500);
+    let offset = query.offset.unwrap_or(0);
+    let sort_by = query.sort_by.as_deref().unwrap_or("created_at");
+    let sort_order = query.sort_order.as_deref().unwrap_or("desc");
+
+    if !matches!(sort_by, "created_at" | "updated_at" | "title") {
+        return Err(ApiError::BadRequest(format!(
+            "Invalid sort_by: '{}'. Valid values: 'created_at', 'updated_at', 'title'",
+            sort_by
+        )));
+    }
+
+    if !matches!(sort_order, "asc" | "desc") {
+        return Err(ApiError::BadRequest(format!(
+            "Invalid sort_order: '{}'. Valid values: 'asc', 'desc'",
+            sort_order
+        )));
+    }
+
+    let tasks = Task::find_by_project_id_advanced(
+        &deployment.db().pool,
+        query.project_id,
+        status_filters,
+        created_after,
+        created_before,
+        updated_after,
+        updated_before,
+        sort_by,
+        sort_order,
+        limit,
+        offset,
+    )
+    .await?;
 
     Ok(ResponseJson(ApiResponse::success(tasks)))
 }
