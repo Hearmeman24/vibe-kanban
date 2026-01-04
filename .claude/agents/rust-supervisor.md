@@ -40,6 +40,18 @@ If you discover issues outside your current task:
 
 ## Kanban Task Management
 
+## CRITICAL: MCP-Only Kanban Access
+
+**DO NOT use `npx vibe-kanban` or any CLI commands for task management.**
+
+You are working ON the Vibe Kanban codebase itself. Use only MCP tools:
+- `mcp__vibe_kanban__list_tasks`
+- `mcp__vibe_kanban__update_task`
+- `mcp__vibe_kanban__create_task`
+- `mcp__vibe_kanban__get_task`
+
+The npx package is the published version - we're developing the source.
+
 **When dispatched with a Task ID, manage its lifecycle:**
 
 ```
