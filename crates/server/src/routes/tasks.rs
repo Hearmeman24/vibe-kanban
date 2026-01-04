@@ -711,6 +711,39 @@ pub async fn get_task_relationships(
     Ok(ResponseJson(ApiResponse::success(relationships)))
 }
 
+#[derive(Debug, Deserialize)]
+pub struct AppendAgentMetadataRequest {
+    pub agent_name: String,
+    pub action: String,
+    pub summary: Option<String>,
+}
+
+pub async fn append_agent_metadata(
+    Extension(task): Extension<Task>,
+    State(deployment): State<DeploymentImpl>,
+    Json(payload): Json<AppendAgentMetadataRequest>,
+) -> Result<ResponseJson<ApiResponse<Task>>, ApiError> {
+    let agent_name = payload.agent_name.trim();
+    if agent_name.is_empty() {
+        return Err(ApiError::BadRequest("agent_name cannot be empty".to_string()));
+    }
+
+    let action = payload.action.trim();
+    if action.is_empty() {
+        return Err(ApiError::BadRequest("action cannot be empty".to_string()));
+    }
+
+    let entry = AgentMetadataEntry::new(
+        agent_name.to_string(),
+        action.to_string(),
+        payload.summary,
+    );
+
+    let updated_task = Task::append_agent_metadata(&deployment.db().pool, task.id, entry).await?;
+
+    Ok(ResponseJson(ApiResponse::success(updated_task)))
+}
+
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let task_actions_router = Router::new()
         .route("/", put(update_task))
