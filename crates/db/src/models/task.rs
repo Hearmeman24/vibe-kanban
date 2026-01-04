@@ -240,6 +240,7 @@ ORDER BY t.created_at DESC"#,
   t.status,
   t.parent_workspace_id,
   t.shared_task_id,
+  t.assignee,
   t.created_at,
   t.updated_at,
 
