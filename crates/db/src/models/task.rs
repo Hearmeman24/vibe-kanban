@@ -510,6 +510,23 @@ WHERE t.project_id = "#,
         Ok(())
     }
 
+    /// Update the assignee field for a task
+    pub async fn update_assignee(
+        pool: &SqlitePool,
+        task_id: Uuid,
+        assignee: Option<String>,
+    ) -> Result<Self, sqlx::Error> {
+        sqlx::query_as!(
+            Task,
+            r#"UPDATE tasks SET assignee = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+               RETURNING id as "id!: Uuid", project_id as "project_id!: Uuid", title, description, status as "status!: TaskStatus", parent_workspace_id as "parent_workspace_id: Uuid", shared_task_id as "shared_task_id: Uuid", assignee, created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>""#,
+            task_id,
+            assignee
+        )
+        .fetch_one(pool)
+        .await
+    }
+
     /// Nullify parent_workspace_id for all tasks that reference the given workspace ID
     /// This breaks parent-child relationships before deleting a parent task
     pub async fn nullify_children_by_workspace_id<'e, E>(
