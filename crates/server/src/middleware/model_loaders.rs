@@ -6,7 +6,7 @@ use axum::{
 };
 use db::models::{
     execution_process::ExecutionProcess, project::Project, session::Session, tag::Tag, task::Task,
-    workspace::Workspace,
+    webhook::Webhook, workspace::Workspace,
 };
 use deployment::Deployment;
 use uuid::Uuid;
