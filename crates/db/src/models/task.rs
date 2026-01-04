@@ -586,6 +586,7 @@ WHERE t.project_id = "#,
                     parent_workspace_id: row.try_get("parent_workspace_id").ok().flatten(),
                     shared_task_id: row.try_get("shared_task_id").ok().flatten(),
                     assignee: row.try_get("assignee").ok().flatten(),
+                    agent_metadata: row.try_get("agent_metadata").ok().flatten(),
                     created_at: row.try_get("created_at").unwrap_or_default(),
                     updated_at: row.try_get("updated_at").unwrap_or_default(),
                 }
