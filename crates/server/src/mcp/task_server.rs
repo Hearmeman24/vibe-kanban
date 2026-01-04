@@ -346,6 +346,19 @@ pub struct GetTaskHistoryRequest {
     pub task_id: Uuid,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct AssignTaskRequest {
+    #[schemars(description = "The ID of the task to assign. This is required!")]
+    pub task_id: Uuid,
+    #[schemars(description = "The name/identifier of the assignee. Pass null/None to unassign the task.")]
+    pub assignee: Option<String>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct AssignTaskResponse {
+    pub task: TaskDetails,
+}
+
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 pub struct TaskHistorySummary {
     #[schemars(description = "The unique identifier of the history entry")]
