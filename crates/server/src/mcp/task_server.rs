@@ -688,6 +688,187 @@ impl TaskServer {
     }
 
     #[tool(
+        description = "Advanced task listing with multiple filters, date ranges, sorting, and pagination. Use this for complex queries. `project_id` is required!"
+    )]
+    async fn list_tasks_advanced(
+        &self,
+        Parameters(ListTasksAdvancedRequest {
+            project_id,
+            statuses,
+            created_after,
+            created_before,
+            updated_after,
+            updated_before,
+            limit,
+            offset,
+            sort_by,
+            sort_order,
+        }): Parameters<ListTasksAdvancedRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        use chrono::DateTime;
+
+        // Parse and validate statuses
+        let status_filters = if let Some(ref status_strs) = statuses {
+            let mut parsed_statuses = Vec::new();
+            for status_str in status_strs {
+                match TaskStatus::from_str(status_str) {
+                    Ok(s) => parsed_statuses.push(s),
+                    Err(_) => {
+                        return Self::err(
+                            "Invalid status value. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'".to_string(),
+                            Some(status_str.to_string()),
+                        );
+                    }
+                }
+            }
+            if parsed_statuses.is_empty() {
+                None
+            } else {
+                Some(parsed_statuses)
+            }
+        } else {
+            None
+        };
+
+        // Parse date filters
+        let created_after_dt = if let Some(ref ts) = created_after {
+            match DateTime::parse_from_rfc3339(ts) {
+                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+                Err(_) => {
+                    return Self::err(
+                        "Invalid created_after timestamp. Use RFC3339 format".to_string(),
+                        Some(ts.to_string()),
+                    );
+                }
+            }
+        } else {
+            None
+        };
+
+        let created_before_dt = if let Some(ref ts) = created_before {
+            match DateTime::parse_from_rfc3339(ts) {
+                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+                Err(_) => {
+                    return Self::err(
+                        "Invalid created_before timestamp. Use RFC3339 format".to_string(),
+                        Some(ts.to_string()),
+                    );
+                }
+            }
+        } else {
+            None
+        };
+
+        let updated_after_dt = if let Some(ref ts) = updated_after {
+            match DateTime::parse_from_rfc3339(ts) {
+                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+                Err(_) => {
+                    return Self::err(
+                        "Invalid updated_after timestamp. Use RFC3339 format".to_string(),
+                        Some(ts.to_string()),
+                    );
+                }
+            }
+        } else {
+            None
+        };
+
+        let updated_before_dt = if let Some(ref ts) = updated_before {
+            match DateTime::parse_from_rfc3339(ts) {
+                Ok(dt) => Some(dt.with_timezone(&chrono::Utc)),
+                Err(_) => {
+                    return Self::err(
+                        "Invalid updated_before timestamp. Use RFC3339 format".to_string(),
+                        Some(ts.to_string()),
+                    );
+                }
+            }
+        } else {
+            None
+        };
+
+        // Validate and set defaults for pagination and sorting
+        let task_limit = limit.unwrap_or(50).max(1).min(500);
+        let task_offset = offset.unwrap_or(0);
+        let task_sort_by = sort_by.as_deref().unwrap_or("created_at");
+        let task_sort_order = sort_order.as_deref().unwrap_or("desc");
+
+        // Validate sort_by
+        if !matches!(task_sort_by, "created_at" | "updated_at" | "title") {
+            return Self::err(
+                "Invalid sort_by value. Valid values: 'created_at', 'updated_at', 'title'".to_string(),
+                Some(task_sort_by.to_string()),
+            );
+        }
+
+        // Validate sort_order
+        if !matches!(task_sort_order, "asc" | "desc") {
+            return Self::err(
+                "Invalid sort_order value. Valid values: 'asc', 'desc'".to_string(),
+                Some(task_sort_order.to_string()),
+            );
+        }
+
+        // Build query parameters
+        let mut query_params = vec![("project_id", project_id.to_string())];
+
+        if let Some(ref status_list) = statuses {
+            for status in status_list {
+                query_params.push(("statuses", status.clone()));
+            }
+        }
+
+        if let Some(ref ts) = created_after {
+            query_params.push(("created_after", ts.clone()));
+        }
+        if let Some(ref ts) = created_before {
+            query_params.push(("created_before", ts.clone()));
+        }
+        if let Some(ref ts) = updated_after {
+            query_params.push(("updated_after", ts.clone()));
+        }
+        if let Some(ref ts) = updated_before {
+            query_params.push(("updated_before", ts.clone()));
+        }
+
+        query_params.push(("limit", task_limit.to_string()));
+        query_params.push(("offset", task_offset.to_string()));
+        query_params.push(("sort_by", task_sort_by.to_string()));
+        query_params.push(("sort_order", task_sort_order.to_string()));
+
+        let url = self.url("/api/tasks/advanced");
+        let filtered_tasks: Vec<TaskWithAttemptStatus> =
+            match self.send_json(self.client.get(&url).query(&query_params)).await {
+                Ok(t) => t,
+                Err(e) => return Ok(e),
+            };
+
+        let task_summaries: Vec<TaskSummary> = filtered_tasks
+            .into_iter()
+            .map(TaskSummary::from_task_with_status)
+            .collect();
+
+        let response = ListTasksAdvancedResponse {
+            count: task_summaries.len(),
+            tasks: task_summaries,
+            project_id: project_id.to_string(),
+            applied_filters: ListTasksAdvancedFilters {
+                statuses: statuses.clone(),
+                created_after: created_after.clone(),
+                created_before: created_before.clone(),
+                updated_after: updated_after.clone(),
+                updated_before: updated_before.clone(),
+                limit: task_limit,
+                offset: task_offset,
+                sort_by: task_sort_by.to_string(),
+                sort_order: task_sort_order.to_string(),
+            },
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
         description = "Start working on a task by creating and launching a new workspace session."
     )]
     async fn start_workspace_session(
