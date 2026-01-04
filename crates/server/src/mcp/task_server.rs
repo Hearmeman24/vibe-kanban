@@ -999,6 +999,7 @@ impl TaskServer {
             executor,
             variant,
             repos,
+            agent_name,
         }): Parameters<StartWorkspaceSessionRequest>,
     ) -> Result<CallToolResult, ErrorData> {
         if repos.is_empty() {
@@ -1045,6 +1046,21 @@ impl TaskServer {
                 target_branch: r.base_branch,
             })
             .collect();
+
+        // If agent_name is provided, log agent metadata for the task
+        if let Some(ref name) = agent_name {
+            let trimmed_name = name.trim();
+            if !trimmed_name.is_empty() {
+                let metadata_url = self.url(&format!("/api/tasks/{}/agent-metadata", task_id));
+                let metadata_payload = serde_json::json!({
+                    "agent_name": trimmed_name,
+                    "action": "started",
+                    "summary": format!("Started workspace session with executor {}", executor_trimmed)
+                });
+                // Fire and forget - don't block on metadata logging
+                let _ = self.client.post(&metadata_url).json(&metadata_payload).send().await;
+            }
+        }
 
         let payload = CreateTaskAttemptBody {
             task_id,
