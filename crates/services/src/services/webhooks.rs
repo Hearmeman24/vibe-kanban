@@ -129,7 +129,7 @@ impl WebhookService {
     ///
     /// Returns None if max attempts have been reached.
     pub fn next_retry_delay(attempts: i64) -> Option<Duration> {
-        if attempts < 0 || attempts >= MAX_ATTEMPTS {
+        if !(0..MAX_ATTEMPTS).contains(&attempts) {
             return None;
         }
         Some(Duration::from_secs(
