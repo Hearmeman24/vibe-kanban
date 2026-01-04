@@ -277,6 +277,8 @@ pub struct StartWorkspaceSessionRequest {
     pub variant: Option<String>,
     #[schemars(description = "Base branch for each repository in the project")]
     pub repos: Vec<McpWorkspaceRepoInput>,
+    #[schemars(description = "Optional name of the agent starting the session (e.g., 'Ferris', 'Miley'). When provided, metadata is logged to track agent activity.")]
+    pub agent_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, schemars::JsonSchema)]
