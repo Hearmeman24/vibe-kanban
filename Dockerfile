@@ -31,9 +31,9 @@ COPY crates ./crates
 RUN cargo chef prepare --recipe-path recipe.json
 
 # ==============================================================================
-# Stage 3: Rust Builder - Build dependencies (cached) then application
+# Stage 3: Rust Types Builder - Build generate_types binary first
 # ==============================================================================
-FROM chef AS rust-builder
+FROM chef AS rust-types-builder
 
 # Copy recipe and cook dependencies (this layer is cached)
 COPY --from=planner /app/recipe.json recipe.json
@@ -42,14 +42,11 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Now copy the actual source code
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
-# Assets are embedded at compile time via rust-embed
+# Assets directory (scripts, sounds - not frontend)
 COPY assets ./assets
 
-# Build generate_types binary (uses cached deps, only compiles app code)
+# Build only generate_types binary first
 RUN cargo build --release --bin generate_types
-
-# Build server binary (uses cached deps, only compiles app code)
-RUN cargo build --release --bin server
 
 # ==============================================================================
 # Stage 4: Node Builder - Build frontend with generated types
@@ -72,8 +69,8 @@ COPY npx-cli/package*.json ./npx-cli/
 # Install pnpm and dependencies
 RUN npm install -g pnpm && pnpm install
 
-# Copy generate_types binary from rust builder
-COPY --from=rust-builder /app/target/release/generate_types /usr/local/bin/generate_types
+# Copy generate_types binary from rust types builder
+COPY --from=rust-types-builder /app/target/release/generate_types /usr/local/bin/generate_types
 
 # Copy source code needed for type generation and frontend build
 COPY shared ./shared
@@ -84,6 +81,18 @@ RUN generate_types
 
 # Build frontend
 RUN cd frontend && pnpm run build
+
+# ==============================================================================
+# Stage 5: Rust Server Builder - Build server with frontend embedded
+# ==============================================================================
+FROM rust-types-builder AS rust-builder
+
+# Copy the built frontend from node-builder BEFORE compiling server
+# This is critical: rust-embed embeds frontend/dist at compile time
+COPY --from=node-builder /app/frontend/dist ./frontend/dist
+
+# Build server binary (now with frontend assets available for embedding)
+RUN cargo build --release --bin server
 
 # ==============================================================================
 # Stage 5: Runtime - Minimal production image
