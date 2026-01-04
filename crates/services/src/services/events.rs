@@ -369,28 +369,28 @@ impl EventService {
                                                     }
 
                                                     // Check if task was completed (status changed to Done)
-                                                    if task.status == TaskStatus::Done {
-                                                        // Only trigger TaskCompleted if old status was not Done
-                                                        let was_already_done = old_status_opt
-                                                            .as_ref()
-                                                            .is_some_and(|(_, old_status)| {
-                                                                old_status == "done"
-                                                            });
+                                                    // Only trigger TaskCompleted if old status was not Done
+                                                    let was_already_done = old_status_opt
+                                                        .as_ref()
+                                                        .is_some_and(|(_, old_status)| {
+                                                            old_status == "done"
+                                                        });
 
-                                                        if !was_already_done {
-                                                            if let Err(e) = webhook_svc
-                                                                .trigger_event(
-                                                                    task.project_id,
-                                                                    &WebhookEvent::TaskCompleted,
-                                                                    task_data,
-                                                                )
-                                                                .await
-                                                            {
-                                                                tracing::error!(
-                                                                    "Failed to trigger TaskCompleted webhook: {:?}",
-                                                                    e
-                                                                );
-                                                            }
+                                                    if task.status == TaskStatus::Done
+                                                        && !was_already_done
+                                                    {
+                                                        if let Err(e) = webhook_svc
+                                                            .trigger_event(
+                                                                task.project_id,
+                                                                &WebhookEvent::TaskCompleted,
+                                                                task_data,
+                                                            )
+                                                            .await
+                                                        {
+                                                            tracing::error!(
+                                                                "Failed to trigger TaskCompleted webhook: {:?}",
+                                                                e
+                                                            );
                                                         }
                                                     }
                                                 }
