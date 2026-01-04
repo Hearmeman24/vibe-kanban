@@ -201,6 +201,32 @@ pub async fn get_tasks_advanced(
     Ok(ResponseJson(ApiResponse::success(tasks)))
 }
 
+pub async fn search_tasks(
+    State(deployment): State<DeploymentImpl>,
+    Query(query): Query<TaskSearchQuery>,
+) -> Result<ResponseJson<ApiResponse<Vec<Task>>>, ApiError> {
+    let search_query = query.q.trim();
+    if search_query.is_empty() {
+        return Err(ApiError::BadRequest(
+            "Search query 'q' cannot be empty".to_string(),
+        ));
+    }
+
+    let limit = query.limit.unwrap_or(50).max(1).min(500);
+    let offset = query.offset.unwrap_or(0);
+
+    let tasks = Task::search_by_query(
+        &deployment.db().pool,
+        query.project_id,
+        search_query,
+        limit,
+        offset,
+    )
+    .await?;
+
+    Ok(ResponseJson(ApiResponse::success(tasks)))
+}
+
 pub async fn stream_tasks_ws(
     ws: WebSocketUpgrade,
     State(deployment): State<DeploymentImpl>,
