@@ -43,6 +43,7 @@ pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
         .merge(tags::router(&deployment))
         .merge(task_comments::router(&deployment))
         .merge(task_history::router(&deployment))
+        .merge(webhooks::router(&deployment))
         .merge(oauth::router())
         .merge(organizations::router())
         .merge(filesystem::router())
