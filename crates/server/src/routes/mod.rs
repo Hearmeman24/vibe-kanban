@@ -24,6 +24,7 @@ pub mod sessions;
 pub mod shared_tasks;
 pub mod tags;
 pub mod task_attempts;
+pub mod task_comments;
 pub mod tasks;
 
 pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
