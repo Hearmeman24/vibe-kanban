@@ -406,7 +406,7 @@ pub async fn update_task(
         .parent_workspace_id
         .or(existing_task.parent_workspace_id);
 
-    let task = Task::update(
+    let mut task = Task::update(
         &deployment.db().pool,
         existing_task.id,
         existing_task.project_id,
@@ -416,6 +416,17 @@ pub async fn update_task(
         parent_workspace_id,
     )
     .await?;
+
+    // Handle assignee update separately
+    // Note: payload.assignee is Option<String> where Some("") means clear assignee
+    if payload.assignee.is_some() {
+        let new_assignee = match &payload.assignee {
+            Some(s) if s.trim().is_empty() => None, // Empty string = clear assignee
+            Some(s) => Some(s.clone()),             // Non-empty string = update assignee
+            None => None,                           // None = clear assignee (already handled by outer if)
+        };
+        task = Task::update_assignee(&deployment.db().pool, task.id, new_assignee).await?;
+    }
 
     if let Some(image_ids) = &payload.image_ids {
         TaskImage::delete_by_task_id(&deployment.db().pool, task.id).await?;
