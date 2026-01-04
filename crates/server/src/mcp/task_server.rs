@@ -1392,6 +1392,46 @@ impl TaskServer {
     }
 
     #[tool(
+        description = "Get parent and child tasks for a given task. Returns the task's relationships in the hierarchy - useful for understanding task dependencies and subtasks. `task_id` is required!"
+    )]
+    async fn get_task_relationships(
+        &self,
+        Parameters(GetTaskRelationshipsRequest { task_id }): Parameters<GetTaskRelationshipsRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let url = self.url(&format!("/api/tasks/{}/relationships", task_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiTaskRelationships {
+            current_task: Task,
+            parent_task: Option<Task>,
+            children: Vec<Task>,
+        }
+
+        let relationships: ApiTaskRelationships =
+            match self.send_json(self.client.get(&url)).await {
+                Ok(r) => r,
+                Err(e) => return Ok(e),
+            };
+
+        let children_details: Vec<TaskDetails> = relationships
+            .children
+            .into_iter()
+            .map(TaskDetails::from_task)
+            .collect();
+
+        let response = GetTaskRelationshipsResponse {
+            relationships: TaskRelationshipsSummary {
+                current_task: TaskDetails::from_task(relationships.current_task),
+                parent_task: relationships.parent_task.map(TaskDetails::from_task),
+                children_count: children_details.len(),
+                children: children_details,
+            },
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
         description = "Update the status of multiple tasks at once. `task_ids` (array) and `status` are required!"
     )]
     async fn bulk_update_tasks(
