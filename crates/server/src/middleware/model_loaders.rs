@@ -169,3 +169,25 @@ pub async fn load_session_middleware(
     request.extensions_mut().insert(session);
     Ok(next.run(request).await)
 }
+
+pub async fn load_webhook_middleware(
+    State(deployment): State<DeploymentImpl>,
+    Path(webhook_id): Path<Uuid>,
+    mut request: Request,
+    next: Next,
+) -> Result<Response, StatusCode> {
+    let webhook = match Webhook::find_by_id(&deployment.db().pool, webhook_id).await {
+        Ok(Some(webhook)) => webhook,
+        Ok(None) => {
+            tracing::warn!("Webhook {} not found", webhook_id);
+            return Err(StatusCode::NOT_FOUND);
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch webhook {}: {}", webhook_id, e);
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    request.extensions_mut().insert(webhook);
+    Ok(next.run(request).await)
+}
