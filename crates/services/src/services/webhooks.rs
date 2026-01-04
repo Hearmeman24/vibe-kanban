@@ -5,10 +5,10 @@ use std::time::Duration;
 use chrono::{DateTime, Utc};
 use db::models::{
     webhook::{Webhook, WebhookEvent},
-    webhook_delivery::{CreateWebhookDelivery, DeliveryStatus, WebhookDelivery},
+    webhook_delivery::{CreateWebhookDelivery, WebhookDelivery},
 };
 use hmac::{Hmac, Mac};
-use reqwest::{Client, StatusCode};
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use sqlx::SqlitePool;
