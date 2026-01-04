@@ -179,6 +179,12 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
                 }
               />
             )}
+
+            {/* Comments Section */}
+            <TaskCommentsSection taskId={task.id} />
+
+            {/* History Section */}
+            <TaskHistorySection taskId={task.id} />
           </div>
         </div>
       </NewCardContent>
