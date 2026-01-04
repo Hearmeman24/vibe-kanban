@@ -613,6 +613,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
 
     let inner = Router::new()
         .route("/", get(get_tasks).post(create_task))
+        .route("/advanced", get(get_tasks_advanced))
         .route("/stream/ws", get(stream_tasks_ws))
         .route("/create-and-start", post(create_task_and_start))
         .nest("/{task_id}", task_id_router);
