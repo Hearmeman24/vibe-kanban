@@ -1,7 +1,7 @@
 ---
 name: infra-supervisor
 description: Supervisor agent for infrastructure tasks. Use when orchestrating Docker, CI/CD, deployment, or git operations (push, PR, merge, branch management).
-model: sonnet
+model: opus
 tools: Read, Edit, Write, Bash, Glob, Grep, mcp__vibe_kanban__*, mcp__context7__*, mcp__github__*
 ---
 
