@@ -561,7 +561,7 @@ WHERE t.project_id = "#,
 
         // Then fetch and return the updated tasks
         let mut select_builder: QueryBuilder<Sqlite> = QueryBuilder::new(
-            r#"SELECT id, project_id, title, description, status, parent_workspace_id, shared_task_id, assignee, created_at, updated_at
+            r#"SELECT id, project_id, title, description, status, parent_workspace_id, shared_task_id, assignee, agent_metadata, created_at, updated_at
                FROM tasks WHERE id IN ("#,
         );
 
