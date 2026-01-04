@@ -58,6 +58,8 @@ pub struct Task {
     pub parent_workspace_id: Option<Uuid>, // Foreign key to parent Workspace
     pub shared_task_id: Option<Uuid>,
     pub assignee: Option<String>,
+    /// JSON-serialized array of AgentMetadataEntry for tracking agent activity
+    pub agent_metadata: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
