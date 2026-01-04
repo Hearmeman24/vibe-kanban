@@ -56,6 +56,14 @@ pub struct TaskQueryAdvanced {
     pub sort_order: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TaskSearchQuery {
+    pub project_id: Uuid,
+    pub q: String,
+    pub limit: Option<u32>,
+    pub offset: Option<u32>,
+}
+
 pub async fn get_tasks(
     State(deployment): State<DeploymentImpl>,
     Query(query): Query<TaskQuery>,
