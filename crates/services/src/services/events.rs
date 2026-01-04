@@ -82,10 +82,16 @@ impl EventService {
     }
 
     /// Creates the hook function that should be used with DBService::new_with_after_connect
+    ///
+    /// If `webhook_service` is provided, webhooks will be triggered on database changes:
+    /// - Task insert -> TaskCreated
+    /// - Task update -> TaskUpdated (and TaskCompleted if status changes to Done)
+    /// - Workspace insert -> WorkspaceStarted
     pub fn create_hook(
         msg_store: Arc<MsgStore>,
         entry_count: Arc<RwLock<usize>>,
         db_service: DBService,
+        webhook_service: Option<Arc<WebhookService>>,
     ) -> impl for<'a> Fn(
         &'a mut sqlx::sqlite::SqliteConnection,
     ) -> std::pin::Pin<
@@ -93,16 +99,48 @@ impl EventService {
     > + Send
     + Sync
     + 'static {
+        // Shared map to track old task status for detecting status changes
+        // Key: (rowid), Value: (task_id, project_id, old_status)
+        let old_task_status_map: Arc<std::sync::RwLock<HashMap<i64, (Uuid, Uuid, String)>>> =
+            Arc::new(std::sync::RwLock::new(HashMap::new()));
+
         move |conn: &mut sqlx::sqlite::SqliteConnection| {
             let msg_store_for_hook = msg_store.clone();
             let entry_count_for_hook = entry_count.clone();
             let db_for_hook = db_service.clone();
+            let webhook_service_for_hook = webhook_service.clone();
+            let old_status_map_for_hook = old_task_status_map.clone();
             Box::pin(async move {
                 let mut handle = conn.lock_handle().await?;
                 let runtime_handle = tokio::runtime::Handle::current();
+
+                // Clone for preupdate hook
+                let old_status_map_for_preupdate = old_status_map_for_hook.clone();
+
                 handle.set_preupdate_hook({
                     let msg_store_for_preupdate = msg_store_for_hook.clone();
                     move |preupdate: sqlx::sqlite::PreupdateHookResult<'_>| {
+                        // For task updates, capture the old status before it changes
+                        if preupdate.operation == SqliteOperation::Update
+                            && preupdate.table == "tasks"
+                        {
+                            // Column indices: 0=id, 1=project_id, 4=status
+                            if let Ok(id_val) = preupdate.get_old_column_value(0)
+                                && let Ok(task_id) = <Uuid as Decode<Sqlite>>::decode(id_val)
+                                && let Ok(project_id_val) = preupdate.get_old_column_value(1)
+                                && let Ok(project_id) =
+                                    <Uuid as Decode<Sqlite>>::decode(project_id_val)
+                                && let Ok(status_val) = preupdate.get_old_column_value(4)
+                                && let Ok(old_status) =
+                                    <String as Decode<Sqlite>>::decode(status_val)
+                            {
+                                if let Ok(mut map) = old_status_map_for_preupdate.write() {
+                                    map.insert(preupdate.rowid, (task_id, project_id, old_status));
+                                }
+                            }
+                        }
+
+                        // Handle deletes as before
                         if preupdate.operation != SqliteOperation::Delete {
                             return;
                         }
