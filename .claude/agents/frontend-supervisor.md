@@ -1,7 +1,7 @@
 ---
 name: frontend-supervisor
 description: Supervisor agent for frontend tasks. Use when orchestrating React, TypeScript, UI components, or frontend-related tasks.
-model: sonnet
+model: opus
 tools: Read, Edit, Write, Bash, Glob, Grep, mcp__vibe_kanban__*, mcp__playwright__*, mcp__context7__*, mcp__shadcn__*
 ---
 
