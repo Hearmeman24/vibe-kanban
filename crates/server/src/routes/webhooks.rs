@@ -188,12 +188,12 @@ pub async fn update_webhook(
     }
 
     // Validate events if provided (must not be empty)
-    if let Some(ref events) = payload.events {
-        if events.is_empty() {
-            return Err(ApiError::BadRequest(
-                "Events list cannot be empty".to_string(),
-            ));
-        }
+    if let Some(ref events) = payload.events
+        && events.is_empty()
+    {
+        return Err(ApiError::BadRequest(
+            "Events list cannot be empty".to_string(),
+        ));
     }
 
     let update_data = UpdateWebhook {
