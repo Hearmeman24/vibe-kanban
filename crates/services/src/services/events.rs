@@ -135,7 +135,7 @@ impl EventService {
                                     <String as Decode<Sqlite>>::decode(status_val)
                             {
                                 if let Ok(mut map) = old_status_map_for_preupdate.write() {
-                                    map.insert(preupdate.rowid, (task_id, project_id, old_status));
+                                    map.insert(task_id, (project_id, old_status));
                                 }
                             }
                         }
