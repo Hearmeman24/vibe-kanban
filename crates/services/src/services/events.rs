@@ -349,11 +349,11 @@ impl EventService {
                                                     let old_status_opt = old_status_map
                                                         .read()
                                                         .ok()
-                                                        .and_then(|map| map.get(&rowid).cloned());
+                                                        .and_then(|map| map.get(&task.id).cloned());
 
                                                     // Clean up the old status entry
                                                     if let Ok(mut map) = old_status_map.write() {
-                                                        map.remove(&rowid);
+                                                        map.remove(&task.id);
                                                     }
 
                                                     // Trigger TaskUpdated
@@ -376,7 +376,7 @@ impl EventService {
                                                         // Only trigger TaskCompleted if old status was not Done
                                                         let was_already_done = old_status_opt
                                                             .as_ref()
-                                                            .is_some_and(|(_, _, old_status)| {
+                                                            .is_some_and(|(_, old_status)| {
                                                                 old_status == "done"
                                                             });
 
