@@ -210,6 +210,27 @@ pub struct ListTasksFilters {
     pub limit: i32,
 }
 
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct ListTasksAdvancedResponse {
+    pub tasks: Vec<TaskSummary>,
+    pub count: usize,
+    pub project_id: String,
+    pub applied_filters: ListTasksAdvancedFilters,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct ListTasksAdvancedFilters {
+    pub statuses: Option<Vec<String>>,
+    pub created_after: Option<String>,
+    pub created_before: Option<String>,
+    pub updated_after: Option<String>,
+    pub updated_before: Option<String>,
+    pub limit: u32,
+    pub offset: u32,
+    pub sort_by: String,
+    pub sort_order: String,
+}
+
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
 pub struct UpdateTaskRequest {
     #[schemars(description = "The ID of the task to update")]
