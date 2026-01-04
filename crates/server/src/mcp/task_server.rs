@@ -385,6 +385,29 @@ pub struct AssignTaskResponse {
 }
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GetTaskRelationshipsRequest {
+    #[schemars(description = "The ID of the task to get relationships for. This is required!")]
+    pub task_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct TaskRelationshipsSummary {
+    #[schemars(description = "The task we're querying relationships for")]
+    pub current_task: TaskDetails,
+    #[schemars(description = "The parent task that spawned this task (if any)")]
+    pub parent_task: Option<TaskDetails>,
+    #[schemars(description = "Child tasks spawned by this task's workspaces")]
+    pub children: Vec<TaskDetails>,
+    #[schemars(description = "Number of child tasks")]
+    pub children_count: usize,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct GetTaskRelationshipsResponse {
+    pub relationships: TaskRelationshipsSummary,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
 pub struct BulkUpdateTasksRequest {
     #[schemars(description = "Array of task IDs to update. This is required!")]
     pub task_ids: Vec<Uuid>,
