@@ -106,6 +106,14 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
         <div className="p-6 flex flex-col h-full max-h-[calc(100vh-8rem)]">
           <div className="space-y-3 overflow-y-auto flex-shrink min-h-0">
             <WYSIWYGEditor value={titleContent} disabled />
+            {task.assignee && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-sm py-1 px-2 gap-1.5">
+                  <User className="h-3.5 w-3.5" />
+                  {task.assignee}
+                </Badge>
+              </div>
+            )}
             {descriptionContent && (
               <WYSIWYGEditor value={descriptionContent} disabled />
             )}
