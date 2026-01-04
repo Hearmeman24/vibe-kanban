@@ -772,4 +772,56 @@ WHERE t.project_id = "#,
             children,
         })
     }
+
+    /// Find task relationships given a task_id.
+    /// Returns parent task (if any) and child tasks created from this task's workspaces.
+    pub async fn find_relationships_for_task(
+        pool: &SqlitePool,
+        task_id: Uuid,
+    ) -> Result<TaskRelationshipsSimple, sqlx::Error> {
+        // 1. Get the current task
+        let current_task = Self::find_by_id(pool, task_id)
+            .await?
+            .ok_or(sqlx::Error::RowNotFound)?;
+
+        // 2. Get parent task (if current task was created by another workspace)
+        let parent_task = if let Some(parent_workspace_id) = current_task.parent_workspace_id {
+            // Find the workspace that created the current task
+            if let Ok(Some(parent_workspace)) =
+                Workspace::find_by_id(pool, parent_workspace_id).await
+            {
+                // Find the task that owns that parent workspace - THAT's the real parent
+                Self::find_by_id(pool, parent_workspace.task_id).await?
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // 3. Get all workspaces for this task
+        let workspaces = Workspace::fetch_all(pool, Some(task_id))
+            .await
+            .map_err(|e| match e {
+                super::workspace::WorkspaceError::Database(db_err) => db_err,
+                _ => sqlx::Error::RowNotFound,
+            })?;
+
+        // 4. Collect all children from all workspaces
+        let mut children = Vec::new();
+        for workspace in &workspaces {
+            let workspace_children = Self::find_children_by_workspace_id(pool, workspace.id).await?;
+            children.extend(workspace_children);
+        }
+
+        // Remove duplicates (in case a child somehow has multiple parent workspace refs)
+        children.sort_by(|a, b| a.id.cmp(&b.id));
+        children.dedup_by(|a, b| a.id == b.id);
+
+        Ok(TaskRelationshipsSimple {
+            current_task,
+            parent_task,
+            children,
+        })
+    }
 }
