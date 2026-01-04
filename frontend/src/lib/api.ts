@@ -468,6 +468,47 @@ export const tasksApi = {
   },
 };
 
+// Task Comment type (not yet in shared/types.ts - defined locally)
+export interface TaskComment {
+  id: string;
+  task_id: string;
+  content: string;
+  author: string;
+  created_at: string;
+}
+
+export interface CreateTaskCommentPayload {
+  content: string;
+  author: string;
+}
+
+// Task Comments API
+export const taskCommentsApi = {
+  getByTaskId: async (taskId: string): Promise<TaskComment[]> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/comments`);
+    return handleApiResponse<TaskComment[]>(response);
+  },
+
+  create: async (
+    taskId: string,
+    data: CreateTaskCommentPayload
+  ): Promise<TaskComment> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return handleApiResponse<TaskComment>(response);
+  },
+};
+
+// Task History API
+export const taskHistoryApi = {
+  getByTaskId: async (taskId: string): Promise<TaskHistory[]> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/history`);
+    return handleApiResponse<TaskHistory[]>(response);
+  },
+};
+
 // Sessions API
 export const sessionsApi = {
   getByWorkspace: async (workspaceId: string): Promise<Session[]> => {
