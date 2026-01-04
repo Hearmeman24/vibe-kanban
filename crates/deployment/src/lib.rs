@@ -137,6 +137,15 @@ pub trait Deployment: Clone + Send + Sync + 'static {
         PrMonitorService::spawn(db, analytics, publisher).await
     }
 
+    /// Spawn the background webhook delivery worker.
+    ///
+    /// This worker processes pending webhook deliveries on a configurable interval.
+    /// The interval can be set via the `WEBHOOK_WORKER_POLL_INTERVAL_SECS` environment variable.
+    async fn spawn_webhook_worker_service(&self) -> tokio::task::JoinHandle<()> {
+        let db = self.db().clone();
+        WebhookWorkerService::spawn(db).await
+    }
+
     async fn track_if_analytics_allowed(&self, event_name: &str, properties: Value) {
         let analytics_enabled = self.config().read().await.analytics_enabled;
         // Track events unless user has explicitly opted out
