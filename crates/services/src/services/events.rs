@@ -201,6 +201,8 @@ impl EventService {
                     let entry_count_for_hook = entry_count_for_hook.clone();
                     let msg_store_for_hook = msg_store_for_hook.clone();
                     let db = db_for_hook.clone();
+                    let webhook_service = webhook_service_for_hook.clone();
+                    let old_status_map = old_status_map_for_hook.clone();
 
                     if let Ok(table) = HookTables::from_str(hook.table) {
                         let rowid = hook.rowid;
