@@ -1061,10 +1061,10 @@ impl TaskServer {
     ) -> Result<CallToolResult, ErrorData> {
         // Validate inputs
         if content.trim().is_empty() {
-            return Self::err("Comment content cannot be empty", None::<String>);
+            return Self::err("Comment content cannot be empty".to_string(), None::<String>);
         }
         if author.trim().is_empty() {
-            return Self::err("Author cannot be empty", None::<String>);
+            return Self::err("Author cannot be empty".to_string(), None::<String>);
         }
 
         let url = self.url(&format!("/api/tasks/{}/comments", task_id));
