@@ -66,6 +66,15 @@ pub struct TaskRelationships {
     pub children: Vec<Task>,       // Tasks created from this workspace
 }
 
+/// Simplified task relationships without requiring a workspace reference.
+/// Used by MCP tools to query relationships by task_id directly.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+pub struct TaskRelationshipsSimple {
+    pub current_task: Task,        // The task we're querying relationships for
+    pub parent_task: Option<Task>, // The task that spawned this task (if any)
+    pub children: Vec<Task>,       // Tasks spawned by this task's workspaces
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 pub struct CreateTask {
     pub project_id: Uuid,
