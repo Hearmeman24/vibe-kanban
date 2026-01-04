@@ -1047,6 +1047,103 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Add a comment to a task. Use this to leave notes, progress updates, or other information on a task. `task_id`, `content`, and `author` are required!"
+    )]
+    async fn add_task_comment(
+        &self,
+        Parameters(AddTaskCommentRequest {
+            task_id,
+            content,
+            author,
+        }): Parameters<AddTaskCommentRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Validate inputs
+        if content.trim().is_empty() {
+            return Self::err("Comment content cannot be empty", None::<String>);
+        }
+        if author.trim().is_empty() {
+            return Self::err("Author cannot be empty", None::<String>);
+        }
+
+        let url = self.url(&format!("/api/tasks/{}/comments", task_id));
+        let payload = serde_json::json!({
+            "task_id": task_id,
+            "content": content,
+            "author": author
+        });
+
+        #[derive(Debug, Deserialize)]
+        struct ApiComment {
+            id: Uuid,
+            task_id: Uuid,
+            content: String,
+            author: String,
+            created_at: chrono::DateTime<chrono::Utc>,
+        }
+
+        let comment: ApiComment = match self.send_json(self.client.post(&url).json(&payload)).await
+        {
+            Ok(c) => c,
+            Err(e) => return Ok(e),
+        };
+
+        let response = AddTaskCommentResponse {
+            comment: CommentSummary {
+                id: comment.id.to_string(),
+                task_id: comment.task_id.to_string(),
+                content: comment.content,
+                author: comment.author,
+                created_at: comment.created_at.to_rfc3339(),
+            },
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
+        description = "Get all comments for a task. Returns comments in chronological order (oldest first). `task_id` is required!"
+    )]
+    async fn get_task_comments(
+        &self,
+        Parameters(GetTaskCommentsRequest { task_id }): Parameters<GetTaskCommentsRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let url = self.url(&format!("/api/tasks/{}/comments", task_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiComment {
+            id: Uuid,
+            task_id: Uuid,
+            content: String,
+            author: String,
+            created_at: chrono::DateTime<chrono::Utc>,
+        }
+
+        let comments: Vec<ApiComment> = match self.send_json(self.client.get(&url)).await {
+            Ok(c) => c,
+            Err(e) => return Ok(e),
+        };
+
+        let comment_summaries: Vec<CommentSummary> = comments
+            .into_iter()
+            .map(|c| CommentSummary {
+                id: c.id.to_string(),
+                task_id: c.task_id.to_string(),
+                content: c.content,
+                author: c.author,
+                created_at: c.created_at.to_rfc3339(),
+            })
+            .collect();
+
+        let response = GetTaskCommentsResponse {
+            count: comment_summaries.len(),
+            comments: comment_summaries,
+            task_id: task_id.to_string(),
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
