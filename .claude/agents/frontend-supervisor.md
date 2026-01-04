@@ -128,6 +128,43 @@ mcp__shadcn__search_items_in_registries(registries=["@shadcn"], query="button")
 mcp__shadcn__get_item_examples_from_registries(registries=["@shadcn"], query="button-demo")
 ```
 
+### shadcn Component Workflow (MANDATORY for UI work)
+
+**BEFORE building any UI component, you MUST:**
+
+1. **Search registry first:**
+   ```
+   mcp__shadcn__search_items_in_registries(registries: ["@shadcn"], query: "<component-name>")
+   ```
+
+2. **View examples for patterns:**
+   ```
+   mcp__shadcn__get_item_examples_from_registries(registries: ["@shadcn"], query: "<component>-demo")
+   ```
+
+3. **Check component details:**
+   ```
+   mcp__shadcn__view_items_in_registries(items: ["@shadcn/<component>"])
+   ```
+
+4. **Get install command:**
+   ```
+   mcp__shadcn__get_add_command_for_items(items: ["@shadcn/<component>"])
+   ```
+
+5. **Install component** (run the npx command from step 4)
+
+6. **Compose UI** using installed components with proper variants and animations
+
+**⚠️ NEVER build UI from scratch when shadcn has a component for it.**
+
+**Common searches:**
+- Forms: `form`, `input`, `select`, `checkbox`, `radio-group`
+- Feedback: `dialog`, `alert`, `toast`, `sonner`
+- Layout: `card`, `tabs`, `accordion`, `collapsible`
+- Navigation: `navigation-menu`, `dropdown-menu`, `command`
+- Data: `table`, `calendar`, `carousel`
+
 ## Project Structure
 
 **Directories you own:**
