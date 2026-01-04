@@ -637,6 +637,35 @@ WHERE t.project_id = "#,
         .await
     }
 
+    /// Search tasks by text in title and description using LIKE with wildcards.
+    /// Returns tasks matching the query, ordered by relevance (title matches first, then by updated_at).
+    pub async fn search_by_query(
+        pool: &SqlitePool,
+        project_id: Uuid,
+        query: &str,
+        limit: u32,
+        offset: u32,
+    ) -> Result<Vec<Task>, sqlx::Error> {
+        let search_pattern = format!("%{}%", query);
+        sqlx::query_as!(
+            Task,
+            r#"SELECT id as "id!: Uuid", project_id as "project_id!: Uuid", title, description, status as "status!: TaskStatus", parent_workspace_id as "parent_workspace_id: Uuid", shared_task_id as "shared_task_id: Uuid", assignee, created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>"
+               FROM tasks
+               WHERE project_id = $1
+                 AND (title LIKE $2 OR description LIKE $2)
+               ORDER BY
+                 CASE WHEN title LIKE $2 THEN 0 ELSE 1 END,
+                 updated_at DESC
+               LIMIT $3 OFFSET $4"#,
+            project_id,
+            search_pattern,
+            limit,
+            offset
+        )
+        .fetch_all(pool)
+        .await
+    }
+
     pub async fn find_relationships_for_workspace(
         pool: &SqlitePool,
         workspace: &Workspace,
