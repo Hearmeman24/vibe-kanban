@@ -618,6 +618,18 @@ pub struct ShareTaskResponse {
     pub shared_task_id: Uuid,
 }
 
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct BulkUpdateTasksRequest {
+    pub task_ids: Vec<Uuid>,
+    pub status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct BulkUpdateTasksResponse {
+    pub updated_tasks: Vec<Task>,
+    pub count: usize,
+}
+
 pub async fn share_task(
     Extension(task): Extension<Task>,
     State(deployment): State<DeploymentImpl>,
