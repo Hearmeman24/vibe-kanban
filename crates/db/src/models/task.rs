@@ -345,6 +345,7 @@ WHERE t.project_id = "#,
                 let status: TaskStatus = row.try_get("status").unwrap_or_default();
                 let parent_workspace_id: Option<Uuid> = row.try_get("parent_workspace_id").ok();
                 let shared_task_id: Option<Uuid> = row.try_get("shared_task_id").ok();
+                let assignee: Option<String> = row.try_get("assignee").ok().flatten();
                 let created_at: DateTime<Utc> = row.try_get("created_at").unwrap_or_default();
                 let updated_at: DateTime<Utc> = row.try_get("updated_at").unwrap_or_default();
                 let has_in_progress_attempt: i64 =
@@ -361,6 +362,7 @@ WHERE t.project_id = "#,
                         status,
                         parent_workspace_id,
                         shared_task_id,
+                        assignee,
                         created_at,
                         updated_at,
                     },
