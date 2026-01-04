@@ -225,9 +225,9 @@ ORDER BY t.created_at DESC"#,
         limit: u32,
         offset: u32,
     ) -> Result<Vec<TaskWithAttemptStatus>, sqlx::Error> {
-        use sqlx::QueryBuilder;
+        use sqlx::{QueryBuilder, Row};
 
-        let mut query_builder = QueryBuilder::new(
+        let mut query_builder: QueryBuilder<Sqlite> = QueryBuilder::new(
             r#"SELECT
   t.id,
   t.project_id,
