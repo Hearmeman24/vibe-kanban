@@ -657,6 +657,50 @@ pub async fn share_task(
     })))
 }
 
+pub async fn bulk_update_tasks(
+    State(deployment): State<DeploymentImpl>,
+    Json(payload): Json<BulkUpdateTasksRequest>,
+) -> Result<ResponseJson<ApiResponse<BulkUpdateTasksResponse>>, ApiError> {
+    use db::models::task::TaskStatus;
+    use std::str::FromStr;
+
+    if payload.task_ids.is_empty() {
+        return Err(ApiError::BadRequest(
+            "task_ids array cannot be empty".to_string(),
+        ));
+    }
+
+    let status = match TaskStatus::from_str(&payload.status) {
+        Ok(s) => s,
+        Err(_) => {
+            return Err(ApiError::BadRequest(format!(
+                "Invalid status: '{}'. Valid values: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'",
+                payload.status
+            )));
+        }
+    };
+
+    let updated_tasks =
+        Task::bulk_update_status(&deployment.db().pool, &payload.task_ids, status).await?;
+
+    let count = updated_tasks.len();
+
+    deployment
+        .track_if_analytics_allowed(
+            "tasks_bulk_updated",
+            serde_json::json!({
+                "task_count": count,
+                "new_status": payload.status,
+            }),
+        )
+        .await;
+
+    Ok(ResponseJson(ApiResponse::success(BulkUpdateTasksResponse {
+        updated_tasks,
+        count,
+    })))
+}
+
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let task_actions_router = Router::new()
         .route("/", put(update_task))
