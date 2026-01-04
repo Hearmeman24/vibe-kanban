@@ -190,6 +190,7 @@ impl TaskDetails {
             title: task.title,
             description: task.description,
             status: task.status.to_string(),
+            assignee: task.assignee,
             created_at: task.created_at.to_rfc3339(),
             updated_at: task.updated_at.to_rfc3339(),
             has_in_progress_attempt: None,
