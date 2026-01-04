@@ -298,6 +298,48 @@ pub struct GetTaskResponse {
     pub task: TaskDetails,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct AddTaskCommentRequest {
+    #[schemars(description = "The ID of the task to add a comment to")]
+    pub task_id: Uuid,
+    #[schemars(description = "The content of the comment")]
+    pub content: String,
+    #[schemars(description = "The author of the comment (e.g., agent name like 'Ferris', 'Bree', etc.)")]
+    pub author: String,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct CommentSummary {
+    #[schemars(description = "The unique identifier of the comment")]
+    pub id: String,
+    #[schemars(description = "The ID of the task this comment belongs to")]
+    pub task_id: String,
+    #[schemars(description = "The content of the comment")]
+    pub content: String,
+    #[schemars(description = "The author of the comment")]
+    pub author: String,
+    #[schemars(description = "When the comment was created")]
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct AddTaskCommentResponse {
+    pub comment: CommentSummary,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GetTaskCommentsRequest {
+    #[schemars(description = "The ID of the task to get comments for")]
+    pub task_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct GetTaskCommentsResponse {
+    pub comments: Vec<CommentSummary>,
+    pub count: usize,
+    pub task_id: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct TaskServer {
     client: reqwest::Client,
