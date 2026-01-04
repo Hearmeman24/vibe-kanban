@@ -749,7 +749,8 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .route("/", put(update_task))
         .route("/", delete(delete_task))
         .route("/share", post(share_task))
-        .route("/relationships", get(get_task_relationships));
+        .route("/relationships", get(get_task_relationships))
+        .route("/agent-metadata", post(append_agent_metadata));
 
     let task_id_router = Router::new()
         .route("/", get(get_task))
