@@ -858,4 +858,52 @@ WHERE t.project_id = "#,
             children,
         })
     }
+
+    /// Append an agent metadata entry to a task's agent_metadata JSON array.
+    /// If the task has no existing metadata, a new array is created.
+    pub async fn append_agent_metadata(
+        pool: &SqlitePool,
+        task_id: Uuid,
+        entry: AgentMetadataEntry,
+    ) -> Result<Self, sqlx::Error> {
+        // First get the current task to read existing metadata
+        let task = Self::find_by_id(pool, task_id)
+            .await?
+            .ok_or(sqlx::Error::RowNotFound)?;
+
+        // Parse existing metadata or create new array
+        let mut entries: Vec<AgentMetadataEntry> = if let Some(ref metadata_json) = task.agent_metadata {
+            serde_json::from_str(metadata_json).unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+
+        // Append the new entry
+        entries.push(entry);
+
+        // Serialize back to JSON
+        let new_metadata = serde_json::to_string(&entries)
+            .map_err(|e| sqlx::Error::Protocol(format!("Failed to serialize agent_metadata: {}", e)))?;
+
+        // Update the task
+        sqlx::query_as!(
+            Task,
+            r#"UPDATE tasks SET agent_metadata = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1
+               RETURNING id as "id!: Uuid", project_id as "project_id!: Uuid", title, description, status as "status!: TaskStatus", parent_workspace_id as "parent_workspace_id: Uuid", shared_task_id as "shared_task_id: Uuid", assignee, agent_metadata, created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>""#,
+            task_id,
+            new_metadata
+        )
+        .fetch_one(pool)
+        .await
+    }
+
+    /// Get the parsed agent metadata entries for a task.
+    /// Returns an empty vector if the task has no metadata.
+    pub fn get_agent_metadata_entries(&self) -> Vec<AgentMetadataEntry> {
+        if let Some(ref metadata_json) = self.agent_metadata {
+            serde_json::from_str(metadata_json).unwrap_or_default()
+        } else {
+            Vec::new()
+        }
+    }
 }
