@@ -1974,7 +1974,6 @@ impl TaskServer {
 
         #[derive(Debug, Deserialize)]
         struct ApiMerge {
-            id: Uuid,
             #[serde(rename = "type")]
             merge_type: String,
             #[serde(default)]
