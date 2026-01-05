@@ -292,6 +292,8 @@ pub struct StartWorkspaceSessionResponse {
     pub workspace_id: String,
     #[schemars(description = "The workspace mode used: 'worktree' or 'branch'")]
     pub mode: String,
+    #[schemars(description = "The executor type used")]
+    pub executor: String,
     #[schemars(description = "Information about each repository in the workspace")]
     pub repos: Vec<WorkspaceRepoInfo>,
 }
