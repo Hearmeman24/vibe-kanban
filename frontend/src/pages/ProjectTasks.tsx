@@ -429,6 +429,10 @@ export function ProjectTasks() {
         return;
       }
 
+      if (!matchesAssignee(task.assignee)) {
+        return;
+      }
+
       const isSharedAssignedElsewhere =
         !showSharedTasks &&
         !!sharedTask &&
