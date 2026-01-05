@@ -603,19 +603,35 @@ pub async fn open_task_attempt_in_editor(
     State(deployment): State<DeploymentImpl>,
     Json(payload): Json<OpenEditorRequest>,
 ) -> Result<ResponseJson<ApiResponse<OpenEditorResponse>>, ApiError> {
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_path = Path::new(&container_ref);
-
     // For single-repo projects, open from the repo directory
     let workspace_repos =
         WorkspaceRepo::find_repos_for_workspace(&deployment.db().pool, workspace.id).await?;
-    let workspace_path = if workspace_repos.len() == 1 && payload.file_path.is_none() {
-        workspace_path.join(&workspace_repos[0].name)
+
+    // Determine the workspace path based on mode
+    let workspace_path = if workspace.is_branch_only() {
+        // Branch-only mode: use main repo paths directly
+        if workspace_repos.len() == 1 && payload.file_path.is_none() {
+            PathBuf::from(&workspace_repos[0].path)
+        } else {
+            // For multi-repo, we can't have a unified workspace path in branch mode
+            // Use the first repo's path as a reasonable default
+            workspace_repos
+                .first()
+                .map(|r| PathBuf::from(&r.path))
+                .unwrap_or_default()
+        }
     } else {
-        workspace_path.to_path_buf()
+        // Worktree mode: use container path
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        let base_path = Path::new(&container_ref);
+        if workspace_repos.len() == 1 && payload.file_path.is_none() {
+            base_path.join(&workspace_repos[0].name)
+        } else {
+            base_path.to_path_buf()
+        }
     };
 
     // If a specific file path is provided, use it; otherwise use the base path
