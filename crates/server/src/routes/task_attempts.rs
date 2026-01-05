@@ -241,6 +241,22 @@ pub async fn create_task_attempt(
                 }
             }
 
+            // Create a session for branch-only mode so executor is tracked
+            // Use executor_name if provided, otherwise use the executor from profile
+            let executor_name = payload
+                .executor_name
+                .clone()
+                .unwrap_or_else(|| executor_profile_id.executor.to_string());
+            Session::create(
+                pool,
+                &CreateSession {
+                    executor: Some(executor_name),
+                },
+                Uuid::new_v4(),
+                workspace.id,
+            )
+            .await?;
+
             // Set setup_completed_at immediately for branch mode
             Workspace::set_setup_completed(pool, workspace.id).await?;
 
