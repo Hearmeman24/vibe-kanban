@@ -647,6 +647,73 @@ impl LocalContainerService {
         .map_err(|e| ContainerError::Other(anyhow!("{e}")))
     }
 
+    /// Stream diff for branch-only workspaces using main repo paths
+    async fn stream_diff_branch_only(
+        &self,
+        workspace: &Workspace,
+        stats_only: bool,
+    ) -> Result<futures::stream::BoxStream<'static, Result<LogMsg, std::io::Error>>, ContainerError>
+    {
+        let workspace_repos =
+            WorkspaceRepo::find_by_workspace_id(&self.db.pool, workspace.id).await?;
+        let target_branches: HashMap<_, _> = workspace_repos
+            .iter()
+            .map(|wr| (wr.repo_id, wr.target_branch.clone()))
+            .collect();
+
+        let repositories =
+            WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
+
+        let mut streams = Vec::new();
+
+        for repo in repositories {
+            // For branch-only mode, use the main repo path directly
+            let repo_path = PathBuf::from(&repo.path);
+            let branch = &workspace.branch;
+
+            let Some(target_branch) = target_branches.get(&repo.id) else {
+                tracing::warn!(
+                    "Skipping diff stream for repo {}: no target branch configured",
+                    repo.name
+                );
+                continue;
+            };
+
+            let base_commit = match self
+                .git()
+                .get_base_commit(&repo.path, branch, target_branch)
+            {
+                Ok(c) => c,
+                Err(e) => {
+                    tracing::warn!(
+                        "Skipping diff stream for repo {}: failed to get base commit: {}",
+                        repo.name,
+                        e
+                    );
+                    continue;
+                }
+            };
+
+            let stream = self
+                .create_live_diff_stream(
+                    &repo_path,
+                    &base_commit,
+                    stats_only,
+                    Some(repo.name.clone()),
+                )
+                .await?;
+
+            streams.push(Box::pin(stream));
+        }
+
+        if streams.is_empty() {
+            return Ok(Box::pin(futures::stream::empty()));
+        }
+
+        // Merge all streams into one
+        Ok(Box::pin(futures::stream::select_all(streams)))
+    }
+
     /// Extract the last assistant message from the MsgStore history
     fn extract_last_assistant_message(&self, exec_id: &Uuid) -> Option<String> {
         // Get the MsgStore for this execution
