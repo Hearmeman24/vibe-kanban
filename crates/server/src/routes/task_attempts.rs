@@ -1212,12 +1212,19 @@ pub async fn abort_conflicts_task_attempt(
         .await?
         .ok_or(RepoError::NotFound)?;
 
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    // Determine the worktree path based on workspace mode
+    let worktree_path = if workspace.is_branch_only() {
+        // Branch-only mode: use main repo path
+        Path::new(&repo.path).to_path_buf()
+    } else {
+        // Worktree mode: use worktree path
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        let workspace_path = Path::new(&container_ref);
+        workspace_path.join(&repo.name)
+    };
 
     deployment.git().abort_conflicts(&worktree_path)?;
 
