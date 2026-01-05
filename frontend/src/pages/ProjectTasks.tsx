@@ -491,6 +491,7 @@ export function ProjectTasks() {
     sharedTasksById,
     showSharedTasks,
     userId,
+    assigneeFilter,
   ]);
 
   const visibleTasksByStatus = useMemo(() => {
