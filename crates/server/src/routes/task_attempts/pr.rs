@@ -199,19 +199,28 @@ pub async fn create_github_pr(
         .await?
         .ok_or(RepoError::NotFound)?;
 
-    let repo_path = repo.path;
+    let repo_path = repo.path.clone();
     let target_branch = if let Some(branch) = request.target_branch {
         branch
     } else {
         workspace_repo.target_branch.clone()
     };
 
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_path = PathBuf::from(&container_ref);
-    let worktree_path = workspace_path.join(repo.name);
+    // Determine the path to push from based on workspace mode
+    let (worktree_path, workspace_path) = if workspace.container_ref.is_none() {
+        // Branch-only mode: push from main repo
+        let main_repo_path = PathBuf::from(&repo.path);
+        (main_repo_path.clone(), main_repo_path)
+    } else {
+        // Worktree mode: push from worktree
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        let ws_path = PathBuf::from(&container_ref);
+        let wt_path = ws_path.join(repo.name);
+        (wt_path, ws_path)
+    };
 
     match deployment
         .git()
