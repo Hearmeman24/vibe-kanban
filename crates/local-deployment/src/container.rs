@@ -968,6 +968,17 @@ impl ContainerService for LocalContainerService {
         &self,
         workspace: &Workspace,
     ) -> Result<ContainerRef, ContainerError> {
+        // For branch-only workspaces, we should NOT create a worktree/container
+        // This is used for ORCHESTRATOR_MANAGED executors where the orchestrating
+        // agent handles the workspace management
+        if workspace.is_branch_only() {
+            return Err(ContainerError::Other(anyhow!(
+                "Workspace {} is in branch-only mode and does not support container operations. \
+                 This workspace was created for an orchestrator-managed executor.",
+                workspace.id
+            )));
+        }
+
         let repositories =
             WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
 
