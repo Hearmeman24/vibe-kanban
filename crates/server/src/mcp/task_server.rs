@@ -1282,7 +1282,7 @@ impl TaskServer {
                 let metadata_payload = serde_json::json!({
                     "agent_name": trimmed_name,
                     "action": "started",
-                    "summary": format!("Started workspace session with executor {} (mode: {})", executor_trimmed, mode_str)
+                    "summary": format!("Started workspace session with executor {} (mode: {})", executor_for_response, mode_str)
                 });
                 // Fire and forget - don't block on metadata logging
                 let _ = self.client.post(&metadata_url).json(&metadata_payload).send().await;
