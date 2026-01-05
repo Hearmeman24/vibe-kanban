@@ -354,6 +354,32 @@ export function ProjectTasks() {
   const hasSearch = Boolean(searchQuery.trim());
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const showSharedTasks = searchParams.get('shared') !== 'off';
+  const assigneeFilter = searchParams.get('assignee') || 'all';
+
+  // Extract unique assignees from tasks
+  const uniqueAssignees = useMemo(() => {
+    const assignees = new Set<string>();
+    tasks.forEach((task) => {
+      if (task.assignee) {
+        assignees.add(task.assignee);
+      }
+    });
+    return Array.from(assignees).sort();
+  }, [tasks]);
+
+  // Handler to update assignee filter in URL
+  const handleAssigneeFilterChange = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams);
+      if (value === 'all') {
+        params.delete('assignee');
+      } else {
+        params.set('assignee', value);
+      }
+      setSearchParams(params, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   useEffect(() => {
     if (showSharedTasks) return;
