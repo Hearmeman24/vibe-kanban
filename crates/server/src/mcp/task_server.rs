@@ -2038,6 +2038,7 @@ impl TaskServer {
 
         #[derive(Debug, Deserialize)]
         struct AttachPrResponse {
+            #[allow(dead_code)]
             pr_attached: bool,
             #[allow(dead_code)]
             pr_url: Option<String>,
