@@ -169,11 +169,18 @@ pub async fn create_task_attempt(
         .git_branch_from_workspace(&attempt_id, &task.title)
         .await;
 
+    // Convert mode to string for storage
+    let workspace_mode_str = match payload.mode {
+        WorkspaceMode::Worktree => "worktree".to_string(),
+        WorkspaceMode::Branch => "branch".to_string(),
+    };
+
     let workspace = Workspace::create(
         pool,
         &CreateWorkspace {
             branch: git_branch_name.clone(),
             agent_working_dir,
+            workspace_mode: workspace_mode_str,
         },
         attempt_id,
         payload.task_id,
