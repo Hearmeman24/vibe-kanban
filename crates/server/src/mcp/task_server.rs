@@ -1792,6 +1792,7 @@ impl TaskServer {
         #[derive(Debug, Deserialize)]
         struct RepoWithTargetBranch {
             id: Uuid,
+            #[allow(dead_code)]
             name: String,
             path: String,
             #[allow(dead_code)]
