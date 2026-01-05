@@ -1289,11 +1289,19 @@ impl TaskServer {
             }
         }
 
+        // For ORCHESTRATOR_MANAGED, pass the original executor name
+        let executor_name_override = if is_orchestrator_managed {
+            Some("ORCHESTRATOR_MANAGED".to_string())
+        } else {
+            None
+        };
+
         let payload = serde_json::json!({
             "task_id": task_id,
             "executor_profile_id": executor_profile_id,
             "repos": workspace_repos,
             "mode": mode_str,
+            "executor_name": executor_name_override,
         });
 
         let url = self.url("/api/task-attempts");
