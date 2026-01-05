@@ -24,13 +24,18 @@ export const useScratch = (
   scratchType: ScratchType,
   id: string
 ): UseScratchResult => {
-  const endpoint = scratchApi.getStreamUrl(scratchType, id);
+  // Don't construct endpoint or enable stream if id is empty
+  // This happens for ORCHESTRATOR_MANAGED workspaces that have no session
+  const hasValidId = id.length > 0;
+  const endpoint = hasValidId
+    ? scratchApi.getStreamUrl(scratchType, id)
+    : undefined;
 
   const initialData = useCallback((): ScratchState => ({ scratch: null }), []);
 
   const { data, isConnected, error } = useJsonPatchWsStream<ScratchState>(
     endpoint,
-    true,
+    hasValidId,
     initialData
   );
 
