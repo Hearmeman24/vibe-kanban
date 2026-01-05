@@ -290,6 +290,22 @@ pub struct StartWorkspaceSessionRequest {
 pub struct StartWorkspaceSessionResponse {
     pub task_id: String,
     pub workspace_id: String,
+    #[schemars(description = "The workspace mode used: 'worktree' or 'branch'")]
+    pub mode: String,
+    #[schemars(description = "Information about each repository in the workspace")]
+    pub repos: Vec<WorkspaceRepoInfo>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct WorkspaceRepoInfo {
+    #[schemars(description = "The repository ID")]
+    pub repo_id: String,
+    #[schemars(description = "The branch name created for this workspace")]
+    pub branch_name: String,
+    #[schemars(description = "The base branch this workspace branch is based on")]
+    pub base_branch: String,
+    #[schemars(description = "The working directory path for this repository")]
+    pub working_directory: String,
 }
 
 #[derive(Debug, Serialize, schemars::JsonSchema)]
