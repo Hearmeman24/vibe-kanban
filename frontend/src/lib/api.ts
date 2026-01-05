@@ -509,6 +509,20 @@ export const taskHistoryApi = {
   },
 };
 
+// Agent Metadata API
+export const agentMetadataApi = {
+  getByTaskId: async (
+    taskId: string
+  ): Promise<{ task_id: string; metadata: AgentMetadataEntry[]; count: number }> => {
+    const response = await makeRequest(`/api/tasks/${taskId}/agent-metadata`);
+    return handleApiResponse<{
+      task_id: string;
+      metadata: AgentMetadataEntry[];
+      count: number;
+    }>(response);
+  },
+};
+
 // Sessions API
 export const sessionsApi = {
   getByWorkspace: async (workspaceId: string): Promise<Session[]> => {
