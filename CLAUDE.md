@@ -52,6 +52,12 @@ Every action, even the smallest, must be delegated. Follow-ups go BACK to the sa
 - `mcp__vibe_kanban__get_task_relationships(task_id)` - Parent/child hierarchy
 - `mcp__vibe_kanban__start_workspace_session(task_id, executor, repos, agent_name?)` - Start workspace with git branch
 
+**Git/PR Operations:**
+- `mcp__vibe_kanban__push_workspace_branch(workspace_id, repo_id, force?)` - Push workspace branch to GitHub
+- `mcp__vibe_kanban__create_workspace_pr(workspace_id, repo_id, title, body?, target_branch?, draft?)` - Create GitHub PR
+- `mcp__vibe_kanban__get_workspace_pr_status(workspace_id, repo_id)` - Get PR status from database
+- `mcp__vibe_kanban__refresh_workspace_pr_status(workspace_id, repo_id)` - Refresh PR status from GitHub API (auto-moves task to 'done' if PR merged and task was 'inreview')
+
 ### Dispatcher Workflow (Medium/Large Tasks)
 
 1. **Create task:** `mcp__vibe_kanban__create_task(project_id, title, description)`
