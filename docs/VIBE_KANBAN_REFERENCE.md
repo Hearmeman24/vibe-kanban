@@ -931,6 +931,7 @@ Key characteristics:
   task_id: string;
   workspace_id: string;
   mode: string;              // 'worktree' or 'branch'
+  executor: string;          // Executor type used (e.g., 'CLAUDE_CODE', 'ORCHESTRATOR_MANAGED')
   repos: Array<{
     repo_id: string;
     branch_name: string;     // Git branch created
