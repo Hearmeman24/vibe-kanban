@@ -507,7 +507,8 @@ pub async fn push_task_attempt_branch(
         .ok_or(RepoError::NotFound)?;
 
     // Determine the path to push from based on workspace mode
-    let push_path = if workspace.container_ref.is_none() {
+    // Use explicit workspace_mode field rather than container_ref check
+    let push_path = if workspace.is_branch_only() {
         // Branch-only mode: push from main repo
         Path::new(&repo.path).to_path_buf()
     } else {
