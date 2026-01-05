@@ -23,7 +23,7 @@ use uuid::Uuid;
 
 use crate::routes::{
     containers::ContainerQuery,
-    task_attempts::{CreateTaskAttemptBody, WorkspaceRepoInput},
+    task_attempts::WorkspaceRepoInput,
 };
 
 #[derive(Debug, Deserialize, schemars::JsonSchema)]
