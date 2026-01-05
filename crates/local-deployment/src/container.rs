@@ -1238,6 +1238,13 @@ impl ContainerService for LocalContainerService {
         stats_only: bool,
     ) -> Result<futures::stream::BoxStream<'static, Result<LogMsg, std::io::Error>>, ContainerError>
     {
+        // Branch-only workspaces use main repo paths instead of worktrees
+        if workspace.is_branch_only() {
+            return self
+                .stream_diff_branch_only(workspace, stats_only)
+                .await;
+        }
+
         let workspace_repos =
             WorkspaceRepo::find_by_workspace_id(&self.db.pool, workspace.id).await?;
         let target_branches: HashMap<_, _> = workspace_repos
