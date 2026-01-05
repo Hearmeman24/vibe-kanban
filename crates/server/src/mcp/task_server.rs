@@ -1557,6 +1557,107 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    #[tool(
+        description = "Add agent metadata to a task. Use this to track which agents have worked on a task and what actions they performed. `task_id`, `agent_name`, and `action` are required!"
+    )]
+    async fn add_agent_metadata(
+        &self,
+        Parameters(AddAgentMetadataRequest {
+            task_id,
+            agent_name,
+            action,
+            summary,
+        }): Parameters<AddAgentMetadataRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Validate inputs
+        let agent_name_trimmed = agent_name.trim();
+        if agent_name_trimmed.is_empty() {
+            return Self::err("agent_name cannot be empty".to_string(), None::<String>);
+        }
+
+        let action_trimmed = action.trim();
+        if action_trimmed.is_empty() {
+            return Self::err("action cannot be empty".to_string(), None::<String>);
+        }
+
+        let url = self.url(&format!("/api/tasks/{}/agent-metadata", task_id));
+        let payload = serde_json::json!({
+            "agent_name": agent_name_trimmed,
+            "action": action_trimmed,
+            "summary": summary
+        });
+
+        let _updated_task: Task = match self.send_json(self.client.post(&url).json(&payload)).await {
+            Ok(t) => t,
+            Err(e) => return Ok(e),
+        };
+
+        // Return the entry that was added
+        let response = AddAgentMetadataResponse {
+            task_id: task_id.to_string(),
+            entry: AgentMetadataSummary {
+                agent_name: agent_name_trimmed.to_string(),
+                action: action_trimmed.to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+                summary,
+            },
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
+        description = "Get all agent metadata entries for a task. Returns the history of which agents worked on the task and what actions they performed. `task_id` is required!"
+    )]
+    async fn get_agent_metadata(
+        &self,
+        Parameters(GetAgentMetadataRequest { task_id }): Parameters<GetAgentMetadataRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let url = self.url(&format!("/api/tasks/{}/agent-metadata", task_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiAgentMetadataEntry {
+            agent_name: String,
+            action: String,
+            timestamp: String,
+            summary: Option<String>,
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct ApiGetAgentMetadataResponse {
+            #[allow(dead_code)]
+            task_id: Uuid,
+            metadata: Vec<ApiAgentMetadataEntry>,
+            #[allow(dead_code)]
+            count: usize,
+        }
+
+        let api_response: ApiGetAgentMetadataResponse =
+            match self.send_json(self.client.get(&url)).await {
+                Ok(r) => r,
+                Err(e) => return Ok(e),
+            };
+
+        let metadata_summaries: Vec<AgentMetadataSummary> = api_response
+            .metadata
+            .into_iter()
+            .map(|entry| AgentMetadataSummary {
+                agent_name: entry.agent_name,
+                action: entry.action,
+                timestamp: entry.timestamp,
+                summary: entry.summary,
+            })
+            .collect();
+
+        let response = GetAgentMetadataResponse {
+            task_id: task_id.to_string(),
+            count: metadata_summaries.len(),
+            metadata: metadata_summaries,
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
