@@ -870,6 +870,44 @@ export function ProjectTasks() {
       : `${truncated}...`;
   };
 
+  // Assignee filter dropdown component
+  const assigneeFilterDropdown = uniqueAssignees.length > 0 && (
+    <div className="flex items-center gap-2 px-4 py-2">
+      <Filter className="h-4 w-4 text-muted-foreground" />
+      <Select value={assigneeFilter} onValueChange={handleAssigneeFilterChange}>
+        <SelectTrigger className="w-[180px] h-8 text-sm">
+          <SelectValue placeholder={t('filter.assignee', { defaultValue: 'Filter by Assignee' })} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">
+            {t('filter.allAssignees', { defaultValue: 'All Assignees' })}
+          </SelectItem>
+          <SelectItem value="unassigned">
+            {t('filter.unassigned', { defaultValue: 'Unassigned' })}
+          </SelectItem>
+          {uniqueAssignees.map((assignee) => (
+            <SelectItem key={assignee} value={assignee}>
+              <div className="flex items-center gap-2">
+                <User className="h-3 w-3" />
+                {assignee}
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {assigneeFilter !== 'all' && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2"
+          onClick={() => handleAssigneeFilterChange('all')}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+
   const kanbanContent =
     tasks.length === 0 && !hasSharedTasks ? (
       <div className="max-w-7xl mx-auto mt-8">
@@ -885,6 +923,7 @@ export function ProjectTasks() {
       </div>
     ) : !hasVisibleLocalTasks && !hasVisibleSharedTasks ? (
       <div className="max-w-7xl mx-auto mt-8">
+        {assigneeFilterDropdown}
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground">
@@ -894,17 +933,20 @@ export function ProjectTasks() {
         </Card>
       </div>
     ) : (
-      <div className="w-full h-full overflow-x-auto overflow-y-auto overscroll-x-contain">
-        <TaskKanbanBoard
-          columns={kanbanColumns}
-          onDragEnd={handleDragEnd}
-          onViewTaskDetails={handleViewTaskDetails}
-          onViewSharedTask={handleViewSharedTask}
-          selectedTaskId={selectedTask?.id}
-          selectedSharedTaskId={selectedSharedTaskId}
-          onCreateTask={handleCreateNewTask}
-          projectId={projectId!}
-        />
+      <div className="w-full h-full flex flex-col overflow-hidden">
+        {assigneeFilterDropdown}
+        <div className="flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain">
+          <TaskKanbanBoard
+            columns={kanbanColumns}
+            onDragEnd={handleDragEnd}
+            onViewTaskDetails={handleViewTaskDetails}
+            onViewSharedTask={handleViewSharedTask}
+            selectedTaskId={selectedTask?.id}
+            selectedSharedTaskId={selectedSharedTaskId}
+            onCreateTask={handleCreateNewTask}
+            projectId={projectId!}
+          />
+        </div>
       </div>
     );
 
