@@ -287,6 +287,7 @@ impl Workspace {
                        container_ref,
                        branch,
                        agent_working_dir,
+                       workspace_mode,
                        setup_completed_at AS "setup_completed_at: DateTime<Utc>",
                        created_at        AS "created_at!: DateTime<Utc>",
                        updated_at        AS "updated_at!: DateTime<Utc>"
@@ -306,6 +307,7 @@ impl Workspace {
                        container_ref,
                        branch,
                        agent_working_dir,
+                       workspace_mode,
                        setup_completed_at AS "setup_completed_at: DateTime<Utc>",
                        created_at        AS "created_at!: DateTime<Utc>",
                        updated_at        AS "updated_at!: DateTime<Utc>"
