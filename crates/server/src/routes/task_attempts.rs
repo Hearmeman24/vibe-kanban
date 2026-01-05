@@ -103,17 +103,12 @@ pub async fn get_task_attempt(
     Ok(ResponseJson(ApiResponse::success(workspace)))
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "lowercase")]
 pub enum WorkspaceMode {
+    #[default]
     Worktree,
     Branch,
-}
-
-impl Default for WorkspaceMode {
-    fn default() -> Self {
-        Self::Worktree
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize, ts_rs::TS)]
