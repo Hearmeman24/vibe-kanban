@@ -9,6 +9,7 @@ import type {
 type CreateAttemptArgs = {
   profile: ExecutorProfileId;
   repos: WorkspaceRepoInput[];
+  mode?: 'worktree' | 'branch';
 };
 
 type UseAttemptCreationArgs = {
@@ -23,12 +24,13 @@ export function useAttemptCreation({
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ profile, repos }: CreateAttemptArgs) =>
+    mutationFn: ({ profile, repos, mode = 'worktree' }: CreateAttemptArgs) =>
       attemptsApi.create({
         task_id: taskId,
         executor_profile_id: profile,
         repos,
-      }),
+        mode,
+      } as Parameters<typeof attemptsApi.create>[0]),
     onSuccess: (newAttempt: Workspace) => {
       queryClient.setQueryData(
         ['taskAttempts', taskId],
