@@ -978,14 +978,30 @@ pub async fn rename_branch(
     }
 
     let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_dir = PathBuf::from(&container_ref);
+
+    // Determine workspace directory based on mode
+    let workspace_dir = if workspace.is_branch_only() {
+        // Branch-only mode: no container directory
+        None
+    } else {
+        // Worktree mode: get the container path
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        Some(PathBuf::from(&container_ref))
+    };
+
+    // Helper to get the path for git operations
+    let get_repo_path = |repo: &Repo| -> PathBuf {
+        match &workspace_dir {
+            Some(dir) => dir.join(&repo.name),
+            None => PathBuf::from(&repo.path), // Branch-only: use main repo path
+        }
+    };
 
     for repo in &repos {
-        let worktree_path = workspace_dir.join(&repo.name);
+        let worktree_path = get_repo_path(repo);
 
         if deployment
             .git()
@@ -1012,7 +1028,7 @@ pub async fn rename_branch(
     let mut renamed_repos: Vec<&Repo> = Vec::new();
 
     for repo in &repos {
-        let worktree_path = workspace_dir.join(&repo.name);
+        let worktree_path = get_repo_path(repo);
 
         match deployment.git().rename_local_branch(
             &worktree_path,
@@ -1025,7 +1041,7 @@ pub async fn rename_branch(
             Err(e) => {
                 // Rollback already renamed repos
                 for renamed_repo in &renamed_repos {
-                    let rollback_path = workspace_dir.join(&renamed_repo.name);
+                    let rollback_path = get_repo_path(renamed_repo);
                     if let Err(rollback_err) = deployment.git().rename_local_branch(
                         &rollback_path,
                         new_branch_name,
