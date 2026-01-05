@@ -45,16 +45,19 @@ export const useScratch = (
 
   const updateScratch = useCallback(
     async (update: UpdateScratch) => {
+      if (!hasValidId) return; // No-op for empty id
       await scratchApi.update(scratchType, id, update);
     },
-    [scratchType, id]
+    [scratchType, id, hasValidId]
   );
 
   const deleteScratch = useCallback(async () => {
+    if (!hasValidId) return; // No-op for empty id
     await scratchApi.delete(scratchType, id);
-  }, [scratchType, id]);
+  }, [scratchType, id, hasValidId]);
 
-  const isLoading = !data && !error && !isConnected;
+  // If no valid id, we're not loading - scratch is just disabled
+  const isLoading = hasValidId && !data && !error && !isConnected;
 
   return {
     scratch,
