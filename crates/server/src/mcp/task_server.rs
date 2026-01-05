@@ -226,6 +226,7 @@ pub struct ListTasksAdvancedResponse {
 #[derive(Debug, Serialize, schemars::JsonSchema)]
 pub struct ListTasksAdvancedFilters {
     pub statuses: Option<Vec<String>>,
+    pub assignee: Option<String>,
     pub created_after: Option<String>,
     pub created_before: Option<String>,
     pub updated_after: Option<String>,
