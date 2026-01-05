@@ -32,6 +32,13 @@ pub async fn run_gh_cli_setup(
     deployment: &crate::DeploymentImpl,
     workspace: &Workspace,
 ) -> Result<ExecutionProcess, ApiError> {
+    // Branch-only workspaces don't support setup scripts (no container/worktree)
+    if workspace.is_branch_only() {
+        return Err(ApiError::Executor(
+            executors::executors::ExecutorError::SetupHelperNotSupported,
+        ));
+    }
+
     let executor_action = get_gh_cli_setup_helper_action().await?;
 
     deployment
