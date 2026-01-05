@@ -700,11 +700,18 @@ pub async fn get_task_attempt_branch_status(
         .map(|wr| (wr.repo_id, wr.target_branch.clone()))
         .collect();
 
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_dir = PathBuf::from(&container_ref);
+    // Determine workspace directory based on mode
+    let workspace_dir = if workspace.is_branch_only() {
+        // Branch-only mode: no worktree directory, we'll use repo paths directly
+        None
+    } else {
+        // Worktree mode: get the container path
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        Some(PathBuf::from(&container_ref))
+    };
 
     let mut results = Vec::with_capacity(repositories.len());
 
@@ -715,7 +722,11 @@ pub async fn get_task_attempt_branch_status(
 
         let repo_merges = Merge::find_by_workspace_and_repo_id(pool, workspace.id, repo.id).await?;
 
-        let worktree_path = workspace_dir.join(&repo.name);
+        // Determine the path to use for git operations
+        let worktree_path = match &workspace_dir {
+            Some(dir) => dir.join(&repo.name),
+            None => PathBuf::from(&repo.path), // Branch-only: use main repo path
+        };
 
         let head_oid = deployment
             .git()
