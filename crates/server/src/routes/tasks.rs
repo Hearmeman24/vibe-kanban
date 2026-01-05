@@ -188,6 +188,7 @@ pub async fn get_tasks_advanced(
         &deployment.db().pool,
         query.project_id,
         status_filters,
+        query.assignee.as_deref(),
         created_after,
         created_before,
         updated_after,
