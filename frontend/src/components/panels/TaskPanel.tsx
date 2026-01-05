@@ -15,6 +15,7 @@ import { DataTable, type ColumnDef } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { TaskCommentsSection } from '@/components/tasks/TaskCommentsSection';
 import { TaskHistorySection } from '@/components/tasks/TaskHistorySection';
+import { AgentActivitySection } from '@/components/tasks/AgentActivitySection';
 
 interface TaskPanelProps {
   task: TaskWithAttemptStatus | null;
