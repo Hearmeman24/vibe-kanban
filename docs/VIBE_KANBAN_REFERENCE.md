@@ -880,7 +880,7 @@ const result = await mcp.call("vibe_kanban", "get_agent_metadata", {
 
 #### `start_workspace_session`
 
-Start working on a task by creating a new workspace session.
+Start working on a task by creating a new workspace session. Supports two modes: full worktree mode (default) or lightweight branch-only mode.
 
 **Parameters:**
 - `task_id` (UUID, **required**)
@@ -890,12 +890,27 @@ Start working on a task by creating a new workspace session.
   - `repo_id` (UUID) - Repository ID
   - `base_branch` (String) - Base/target branch (e.g., "main")
 - `agent_name` (Optional String) - Agent name for metadata logging
+- `mode` (Optional String) - Workspace mode: 'worktree' (default) or 'branch'
+
+**Mode Behavior:**
+
+| Mode | Creates Worktree | Creates Branch | Returns Working Directory |
+|------|------------------|----------------|---------------------------|
+| `worktree` (default) | Yes | Yes | Worktree path |
+| `branch` | No | Yes | Project root (repo path) |
 
 **Returns:**
 ```typescript
 {
   task_id: string;
   workspace_id: string;
+  mode: string;              // 'worktree' or 'branch'
+  repos: Array<{
+    repo_id: string;
+    branch_name: string;     // Git branch created
+    base_branch: string;     // Base branch specified
+    working_directory: string; // Path to work in
+  }>;
 }
 ```
 
@@ -904,14 +919,15 @@ Start working on a task by creating a new workspace session.
 2. `WorkspaceRepo` records for each repo
 3. `Session` record
 4. `AgentMetadataEntry` if `agent_name` provided
-5. Triggers container/worktree creation (async)
+5. **For worktree mode:** Triggers container/worktree creation (async)
+6. **For branch mode:** Creates git branch immediately, sets `setup_completed_at`, no worktree/container
 
 **Branch Name Format:**
 ```
 vk-{workspace_id}-{sanitized_task_title}
 ```
 
-**Example:**
+**Example (Worktree Mode - Default):**
 ```typescript
 const result = await mcp.call("vibe_kanban", "start_workspace_session", {
   task_id: "abc123...",
@@ -924,13 +940,61 @@ const result = await mcp.call("vibe_kanban", "start_workspace_session", {
   ],
   agent_name: "Ferris"
 });
-// { task_id: "abc123...", workspace_id: "workspace456..." }
+// {
+//   task_id: "abc123...",
+//   workspace_id: "workspace456...",
+//   mode: "worktree",
+//   repos: [{
+//     repo_id: "repo123...",
+//     branch_name: "vk-workspace456-fix-auth",
+//     base_branch: "main",
+//     working_directory: "/tmp/vk-worktrees/workspace456/repo-name"
+//   }]
+// }
 ```
 
-**Post-creation Actions:**
+**Example (Branch Mode):**
+```typescript
+const result = await mcp.call("vibe_kanban", "start_workspace_session", {
+  task_id: "abc123...",
+  executor: "CLAUDE_CODE",
+  repos: [
+    {
+      repo_id: "repo123...",
+      base_branch: "main"
+    }
+  ],
+  agent_name: "Ferris",
+  mode: "branch"
+});
+// {
+//   task_id: "abc123...",
+//   workspace_id: "workspace456...",
+//   mode: "branch",
+//   repos: [{
+//     repo_id: "repo123...",
+//     branch_name: "vk-workspace456-fix-auth",
+//     base_branch: "main",
+//     working_directory: "/Users/dev/projects/my-repo"  // Project root
+//   }]
+// }
+```
+
+**Post-creation Actions (Worktree Mode):**
 - Git worktree created for the workspace branch
 - Optional Docker container started
 - Executor environment prepared
+
+**Post-creation Actions (Branch Mode):**
+- Git branch created (not checked out)
+- No worktree or container created
+- `setup_completed_at` set immediately
+- Agent works in the original repo directory
+
+**Use Cases for Branch Mode:**
+- Agents that manage their own workspace (e.g., already running in the repo)
+- Lightweight task tracking without full isolation
+- Faster startup when worktree overhead isn't needed
 
 ---
 
