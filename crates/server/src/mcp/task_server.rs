@@ -850,6 +850,7 @@ impl TaskServer {
         Parameters(ListTasksAdvancedRequest {
             project_id,
             statuses,
+            assignee,
             created_after,
             created_before,
             updated_after,
@@ -942,6 +943,10 @@ impl TaskServer {
             }
         }
 
+        if let Some(ref assignee_name) = assignee {
+            query_params.push(("assignee", assignee_name.clone()));
+        }
+
         if let Some(ref ts) = created_after {
             query_params.push(("created_after", ts.clone()));
         }
@@ -978,6 +983,7 @@ impl TaskServer {
             project_id: project_id.to_string(),
             applied_filters: ListTasksAdvancedFilters {
                 statuses: statuses.clone(),
+                assignee: assignee.clone(),
                 created_after: created_after.clone(),
                 created_before: created_before.clone(),
                 updated_after: updated_after.clone(),
