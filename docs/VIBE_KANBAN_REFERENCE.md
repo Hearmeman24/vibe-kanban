@@ -1818,6 +1818,7 @@ Please investigate the issue and continue work.
 - `GEMINI` - Google Gemini
 - `CURSOR_AGENT` - Cursor Agent
 - `OPENCODE` - OpenCode
+- `ORCHESTRATOR_MANAGED` - No process spawned (for orchestrator-controlled workflows)
 
 ### Common Agent Names
 - `Ferris` - Rust supervisor
