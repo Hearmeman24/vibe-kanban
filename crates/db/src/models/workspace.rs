@@ -44,6 +44,47 @@ pub enum WorkspaceStatus {
     ExecutorFailed,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "lowercase")]
+pub enum WorkspaceMode {
+    #[default]
+    Worktree,
+    Branch,
+}
+
+impl WorkspaceMode {
+    /// Returns true if this workspace should create/use a worktree
+    pub fn uses_worktree(&self) -> bool {
+        matches!(self, WorkspaceMode::Worktree)
+    }
+
+    /// Returns true if this workspace is branch-only (no worktree)
+    pub fn is_branch_only(&self) -> bool {
+        matches!(self, WorkspaceMode::Branch)
+    }
+}
+
+impl std::fmt::Display for WorkspaceMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WorkspaceMode::Worktree => write!(f, "worktree"),
+            WorkspaceMode::Branch => write!(f, "branch"),
+        }
+    }
+}
+
+impl std::str::FromStr for WorkspaceMode {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "worktree" => Ok(WorkspaceMode::Worktree),
+            "branch" => Ok(WorkspaceMode::Branch),
+            _ => Err(format!("Invalid workspace mode: {}", s)),
+        }
+    }
+}
+
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
 pub struct Workspace {
     pub id: Uuid,
@@ -51,6 +92,7 @@ pub struct Workspace {
     pub container_ref: Option<String>,
     pub branch: String,
     pub agent_working_dir: Option<String>,
+    pub workspace_mode: String,
     pub setup_completed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
