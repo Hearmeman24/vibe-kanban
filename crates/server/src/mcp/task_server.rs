@@ -1753,6 +1753,358 @@ impl TaskServer {
 
         TaskServer::success(&response)
     }
+
+    // ========================================================================
+    // Git/PR MCP Tools
+    // ========================================================================
+
+    #[tool(
+        description = "Push a workspace branch to GitHub. This delegates to the existing push functionality. `workspace_id` and `repo_id` are required!"
+    )]
+    async fn push_workspace_branch(
+        &self,
+        Parameters(PushWorkspaceBranchRequest {
+            workspace_id,
+            repo_id,
+            force,
+        }): Parameters<PushWorkspaceBranchRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        let force = force.unwrap_or(false);
+
+        // Build the push URL - using force endpoint if force=true
+        let url = if force {
+            self.url(&format!("/api/task-attempts/{}/push/force", workspace_id))
+        } else {
+            self.url(&format!("/api/task-attempts/{}/push", workspace_id))
+        };
+
+        let payload = serde_json::json!({
+            "repo_id": repo_id
+        });
+
+        // First get workspace info to include in response
+        let workspace_url = self.url(&format!("/api/task-attempts/{}", workspace_id));
+        let workspace: Workspace = match self.send_json(self.client.get(&workspace_url)).await {
+            Ok(w) => w,
+            Err(e) => return Ok(e),
+        };
+
+        // Get repo info for remote URL
+        #[derive(Debug, Deserialize)]
+        struct RepoWithTargetBranch {
+            id: Uuid,
+            name: String,
+            path: String,
+            #[allow(dead_code)]
+            target_branch: String,
+        }
+
+        let repos_url = self.url(&format!("/api/task-attempts/{}/repos", workspace_id));
+        let repos: Vec<RepoWithTargetBranch> =
+            match self.send_json(self.client.get(&repos_url)).await {
+                Ok(r) => r,
+                Err(e) => return Ok(e),
+            };
+
+        let repo_info = repos.iter().find(|r| r.id == repo_id);
+        let remote_url = repo_info.map(|r| r.path.clone());
+
+        // Execute the push
+        let _: serde_json::Value = match self.send_json(self.client.post(&url).json(&payload)).await
+        {
+            Ok(v) => v,
+            Err(e) => return Ok(e),
+        };
+
+        let response = PushWorkspaceBranchResponse {
+            success: true,
+            branch_name: workspace.branch,
+            remote_url,
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
+        description = "Create a GitHub Pull Request for a workspace. This pushes the branch and creates the PR. `workspace_id`, `repo_id`, and `title` are required!"
+    )]
+    async fn create_workspace_pr(
+        &self,
+        Parameters(CreateWorkspacePrRequest {
+            workspace_id,
+            repo_id,
+            title,
+            body,
+            target_branch,
+            draft,
+        }): Parameters<CreateWorkspacePrRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Validate title
+        if title.trim().is_empty() {
+            return Self::err("PR title cannot be empty".to_string(), None::<String>);
+        }
+
+        let url = self.url(&format!("/api/task-attempts/{}/pr", workspace_id));
+        let payload = serde_json::json!({
+            "title": title,
+            "body": body,
+            "target_branch": target_branch,
+            "draft": draft.unwrap_or(false),
+            "repo_id": repo_id,
+            "auto_generate_description": false
+        });
+
+        // The PR endpoint returns the PR URL as a string on success
+        let pr_url: String = match self.send_json(self.client.post(&url).json(&payload)).await {
+            Ok(u) => u,
+            Err(e) => return Ok(e),
+        };
+
+        // Extract PR number from URL (format: https://github.com/owner/repo/pull/123)
+        let pr_number = pr_url
+            .rsplit('/')
+            .next()
+            .and_then(|s| s.parse::<i64>().ok())
+            .unwrap_or(0);
+
+        let response = CreateWorkspacePrResponse {
+            pr_number,
+            pr_url,
+            status: "open".to_string(),
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
+        description = "Get PR status for a workspace from the database (not live from GitHub). `workspace_id` and `repo_id` are required!"
+    )]
+    async fn get_workspace_pr_status(
+        &self,
+        Parameters(GetWorkspacePrStatusRequest {
+            workspace_id,
+            repo_id,
+        }): Parameters<GetWorkspacePrStatusRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Get branch status which includes merge info
+        let url = self.url(&format!("/api/task-attempts/{}/branch-status", workspace_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiMerge {
+            #[serde(rename = "type")]
+            merge_type: String,
+            #[serde(default)]
+            pr_info: Option<ApiPrInfo>,
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct ApiPrInfo {
+            number: i64,
+            url: String,
+            status: String,
+            merged_at: Option<String>,
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct ApiBranchStatus {
+            repo_id: Uuid,
+            #[allow(dead_code)]
+            repo_name: String,
+            merges: Vec<ApiMerge>,
+        }
+
+        let statuses: Vec<ApiBranchStatus> = match self.send_json(self.client.get(&url)).await {
+            Ok(s) => s,
+            Err(e) => return Ok(e),
+        };
+
+        // Find the status for the requested repo
+        let repo_status = statuses.iter().find(|s| s.repo_id == repo_id);
+
+        let response = if let Some(status) = repo_status {
+            // Find a PR merge in the merges list
+            let pr_merge = status
+                .merges
+                .iter()
+                .find(|m| m.merge_type == "pr" && m.pr_info.is_some());
+
+            if let Some(merge) = pr_merge {
+                let pr_info = merge.pr_info.as_ref().unwrap();
+                GetWorkspacePrStatusResponse {
+                    has_pr: true,
+                    pr_number: Some(pr_info.number),
+                    pr_url: Some(pr_info.url.clone()),
+                    status: Some(pr_info.status.clone()),
+                    merged_at: pr_info.merged_at.clone(),
+                }
+            } else {
+                GetWorkspacePrStatusResponse {
+                    has_pr: false,
+                    pr_number: None,
+                    pr_url: None,
+                    status: None,
+                    merged_at: None,
+                }
+            }
+        } else {
+            GetWorkspacePrStatusResponse {
+                has_pr: false,
+                pr_number: None,
+                pr_url: None,
+                status: None,
+                merged_at: None,
+            }
+        };
+
+        TaskServer::success(&response)
+    }
+
+    #[tool(
+        description = "Refresh PR status from GitHub API and update the database. If PR is merged and task is 'inreview', moves task to 'done'. `workspace_id` and `repo_id` are required!"
+    )]
+    async fn refresh_workspace_pr_status(
+        &self,
+        Parameters(RefreshWorkspacePrStatusRequest {
+            workspace_id,
+            repo_id,
+        }): Parameters<RefreshWorkspacePrStatusRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // First, get current PR status from database
+        let status_url = self.url(&format!("/api/task-attempts/{}/branch-status", workspace_id));
+
+        #[derive(Debug, Deserialize)]
+        struct ApiMerge {
+            id: Uuid,
+            #[serde(rename = "type")]
+            merge_type: String,
+            #[serde(default)]
+            pr_info: Option<ApiPrInfo>,
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct ApiPrInfo {
+            number: i64,
+            #[allow(dead_code)]
+            url: String,
+            status: String,
+            #[allow(dead_code)]
+            merged_at: Option<String>,
+        }
+
+        #[derive(Debug, Deserialize)]
+        struct ApiBranchStatus {
+            repo_id: Uuid,
+            #[allow(dead_code)]
+            repo_name: String,
+            merges: Vec<ApiMerge>,
+        }
+
+        let statuses: Vec<ApiBranchStatus> =
+            match self.send_json(self.client.get(&status_url)).await {
+                Ok(s) => s,
+                Err(e) => return Ok(e),
+            };
+
+        // Find the status for the requested repo
+        let repo_status = statuses.iter().find(|s| s.repo_id == repo_id);
+
+        let (merge_id, pr_number, previous_status) = if let Some(status) = repo_status {
+            let pr_merge = status
+                .merges
+                .iter()
+                .find(|m| m.merge_type == "pr" && m.pr_info.is_some());
+
+            if let Some(merge) = pr_merge {
+                let pr_info = merge.pr_info.as_ref().unwrap();
+                (merge.id, pr_info.number, pr_info.status.clone())
+            } else {
+                return Self::err(
+                    "No PR found for this workspace/repo combination".to_string(),
+                    None::<String>,
+                );
+            }
+        } else {
+            return Self::err(
+                "Repo not found in workspace".to_string(),
+                None::<String>,
+            );
+        };
+
+        // Now attach/refresh the PR using the attach endpoint
+        // This will fetch fresh status from GitHub
+        let attach_url = self.url(&format!("/api/task-attempts/{}/pr/attach", workspace_id));
+        let attach_payload = serde_json::json!({
+            "repo_id": repo_id
+        });
+
+        #[derive(Debug, Deserialize)]
+        struct AttachPrResponse {
+            pr_attached: bool,
+            #[allow(dead_code)]
+            pr_url: Option<String>,
+            #[allow(dead_code)]
+            pr_number: Option<i64>,
+            pr_status: Option<String>,
+        }
+
+        let attach_response: AttachPrResponse =
+            match self.send_json(self.client.post(&attach_url).json(&attach_payload)).await {
+                Ok(r) => r,
+                Err(e) => return Ok(e),
+            };
+
+        let current_status = attach_response
+            .pr_status
+            .clone()
+            .unwrap_or_else(|| "unknown".to_string());
+        let status_changed = previous_status != current_status;
+
+        // If PR is now merged and status changed, check if we should update the task
+        let mut task_updated = false;
+        if status_changed && current_status == "merged" {
+            // Get workspace to find the task
+            let workspace_url = self.url(&format!("/api/task-attempts/{}", workspace_id));
+
+            #[derive(Debug, Deserialize)]
+            struct WorkspaceInfo {
+                task_id: Uuid,
+            }
+
+            if let Ok(workspace_info) =
+                self.send_json::<WorkspaceInfo>(self.client.get(&workspace_url)).await
+            {
+                // Get task to check its status
+                let task_url = self.url(&format!("/api/tasks/{}", workspace_info.task_id));
+                if let Ok(task) = self.send_json::<Task>(self.client.get(&task_url)).await {
+                    // If task is "inreview", move it to "done"
+                    if task.status == TaskStatus::InReview {
+                        let update_payload = serde_json::json!({
+                            "status": "done"
+                        });
+                        if self
+                            .send_json::<Task>(
+                                self.client.put(&task_url).json(&update_payload),
+                            )
+                            .await
+                            .is_ok()
+                        {
+                            task_updated = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        let response = RefreshWorkspacePrStatusResponse {
+            pr_number,
+            previous_status,
+            current_status,
+            status_changed,
+            task_updated,
+        };
+
+        TaskServer::success(&response)
+    }
 }
 
 #[tool_handler]
