@@ -13,5 +13,5 @@ cd "$PROJECT_DIR"
 echo "=== Building Rust Server (Release) ==="
 cargo build --release
 
-echo "=== Starting Server ==="
-./target/release/server
+echo "=== Starting Server on port 3000 ==="
+PORT=3000 ./target/release/server
