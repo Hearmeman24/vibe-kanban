@@ -128,6 +128,7 @@ fn generate_types_content() -> String {
         server::routes::tasks::ShareTaskResponse::decl(),
         server::routes::tasks::BulkUpdateTasksRequest::decl(),
         server::routes::tasks::BulkUpdateTasksResponse::decl(),
+        server::routes::tasks::GetAgentMetadataResponse::decl(),
         server::routes::tasks::CreateAndStartTaskRequest::decl(),
         server::routes::webhooks::CreateWebhookRequest::decl(),
         server::routes::webhooks::UpdateWebhookRequest::decl(),
