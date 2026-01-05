@@ -163,6 +163,11 @@ pub async fn serve_image(
     Extension(workspace): Extension<Workspace>,
     State(deployment): State<DeploymentImpl>,
 ) -> Result<Response, ApiError> {
+    // Branch-only workspaces don't have a worktree - images not available
+    if workspace.is_branch_only() {
+        return Err(ApiError::Image(ImageError::NotFound));
+    }
+
     // Reject paths with .. to prevent traversal
     if path.contains("..") {
         return Err(ApiError::Image(ImageError::NotFound));
