@@ -1154,7 +1154,7 @@ impl TaskServer {
     }
 
     #[tool(
-        description = "Start working on a task by creating and launching a new workspace session."
+        description = "Start working on a task by creating and launching a new workspace session. Use mode='branch' to create only the git branch without worktree (lighter weight for agents that manage their own workspace)."
     )]
     async fn start_workspace_session(
         &self,
@@ -1164,11 +1164,21 @@ impl TaskServer {
             variant,
             repos,
             agent_name,
+            mode,
         }): Parameters<StartWorkspaceSessionRequest>,
     ) -> Result<CallToolResult, ErrorData> {
         if repos.is_empty() {
             return Self::err(
                 "At least one repository must be specified.".to_string(),
+                None::<String>,
+            );
+        }
+
+        // Validate and normalize mode
+        let mode_str = mode.as_deref().unwrap_or("worktree").trim().to_lowercase();
+        if mode_str != "worktree" && mode_str != "branch" {
+            return Self::err(
+                format!("Invalid mode '{}'. Valid values: 'worktree', 'branch'", mode_str),
                 None::<String>,
             );
         }
@@ -1203,6 +1213,9 @@ impl TaskServer {
             variant,
         };
 
+        // Clone repos for response building later
+        let repos_input: Vec<_> = repos.iter().map(|r| (r.repo_id, r.base_branch.clone())).collect();
+
         let workspace_repos: Vec<WorkspaceRepoInput> = repos
             .into_iter()
             .map(|r| WorkspaceRepoInput {
@@ -1219,18 +1232,19 @@ impl TaskServer {
                 let metadata_payload = serde_json::json!({
                     "agent_name": trimmed_name,
                     "action": "started",
-                    "summary": format!("Started workspace session with executor {}", executor_trimmed)
+                    "summary": format!("Started workspace session with executor {} (mode: {})", executor_trimmed, mode_str)
                 });
                 // Fire and forget - don't block on metadata logging
                 let _ = self.client.post(&metadata_url).json(&metadata_payload).send().await;
             }
         }
 
-        let payload = CreateTaskAttemptBody {
-            task_id,
-            executor_profile_id,
-            repos: workspace_repos,
-        };
+        let payload = serde_json::json!({
+            "task_id": task_id,
+            "executor_profile_id": executor_profile_id,
+            "repos": workspace_repos,
+            "mode": mode_str,
+        });
 
         let url = self.url("/api/task-attempts");
         let workspace: Workspace = match self.send_json(self.client.post(&url).json(&payload)).await
@@ -1239,9 +1253,53 @@ impl TaskServer {
             Err(e) => return Ok(e),
         };
 
+        // Build repo info for response
+        // For branch mode, working_directory is the project root (repo path)
+        // For worktree mode, working_directory is the container_ref + repo_name
+        let mut repo_infos = Vec::new();
+        for (repo_id, base_branch) in repos_input {
+            // Get repo path from the repos API
+            let repo_url = self.url(&format!("/api/repos/{}", repo_id));
+            let working_directory = if mode_str == "branch" {
+                // For branch mode, try to get the repo path
+                match self.send_json::<serde_json::Value>(self.client.get(&repo_url)).await {
+                    Ok(repo_data) => repo_data.get("path")
+                        .and_then(|p| p.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    Err(_) => String::new(),
+                }
+            } else {
+                // For worktree mode, use container_ref + repo name
+                match workspace.container_ref.as_ref() {
+                    Some(container_ref) => {
+                        match self.send_json::<serde_json::Value>(self.client.get(&repo_url)).await {
+                            Ok(repo_data) => {
+                                let repo_name = repo_data.get("name")
+                                    .and_then(|n| n.as_str())
+                                    .unwrap_or("");
+                                format!("{}/{}", container_ref, repo_name)
+                            }
+                            Err(_) => container_ref.clone(),
+                        }
+                    }
+                    None => String::new(),
+                }
+            };
+
+            repo_infos.push(WorkspaceRepoInfo {
+                repo_id: repo_id.to_string(),
+                branch_name: workspace.branch.clone(),
+                base_branch,
+                working_directory,
+            });
+        }
+
         let response = StartWorkspaceSessionResponse {
             task_id: workspace.task_id.to_string(),
             workspace_id: workspace.id.to_string(),
+            mode: mode_str,
+            repos: repo_infos,
         };
 
         TaskServer::success(&response)
