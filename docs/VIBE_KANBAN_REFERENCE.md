@@ -884,7 +884,7 @@ Start working on a task by creating a new workspace session. Supports two modes:
 
 **Parameters:**
 - `task_id` (UUID, **required**)
-- `executor` (String, **required**) - Executor type: 'CLAUDE_CODE', 'CODEX', 'GEMINI', 'CURSOR_AGENT', 'OPENCODE'
+- `executor` (String, **required**) - Executor type: 'CLAUDE_CODE', 'CODEX', 'GEMINI', 'CURSOR_AGENT', 'OPENCODE', 'ORCHESTRATOR_MANAGED'
 - `variant` (Optional String) - Executor variant if needed
 - `repos` (Array<McpWorkspaceRepoInput>, **required**) - At least one repo required
   - `repo_id` (UUID) - Repository ID
@@ -892,12 +892,38 @@ Start working on a task by creating a new workspace session. Supports two modes:
 - `agent_name` (Optional String) - Agent name for metadata logging
 - `mode` (Optional String) - Workspace mode: 'worktree' (default) or 'branch'
 
+**Executor Behavior:**
+
+| Executor | Spawns Process | Creates Workspace DB | Creates Branch | Default Mode |
+|----------|----------------|----------------------|----------------|--------------|
+| `CLAUDE_CODE` | Yes | Yes | Yes | `worktree` |
+| `CODEX` | Yes | Yes | Yes | `worktree` |
+| `GEMINI` | Yes | Yes | Yes | `worktree` |
+| `CURSOR_AGENT` | Yes | Yes | Yes | `worktree` |
+| `OPENCODE` | Yes | Yes | Yes | `worktree` |
+| `ORCHESTRATOR_MANAGED` | **No** | Yes | Yes | `branch` (forced) |
+
 **Mode Behavior:**
 
 | Mode | Creates Worktree | Creates Branch | Returns Working Directory |
 |------|------------------|----------------|---------------------------|
 | `worktree` (default) | Yes | Yes | Worktree path |
 | `branch` | No | Yes | Project root (repo path) |
+
+**ORCHESTRATOR_MANAGED Executor:**
+
+The `ORCHESTRATOR_MANAGED` executor is designed for orchestrator-controlled workflows where:
+- The orchestrator dispatches sub-agents that manage their own processes
+- No automatic process spawning is needed
+- Workspace tracking and git branch management is still required
+
+Key characteristics:
+- **Forces `mode: "branch"`** - worktree mode is not allowed
+- **Does NOT spawn any process** - no executor process is started
+- **Creates workspace records** - full database tracking
+- **Creates git branch** - branch created in each repo
+- **Sets `setup_completed_at` immediately** - no async wait needed
+- **Logs agent metadata** - if `agent_name` is provided
 
 **Returns:**
 ```typescript
