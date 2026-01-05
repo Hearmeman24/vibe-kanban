@@ -46,6 +46,7 @@ pub struct TaskQuery {
 pub struct TaskQueryAdvanced {
     pub project_id: Uuid,
     pub statuses: Option<Vec<String>>,
+    pub assignee: Option<String>,
     pub created_after: Option<String>,
     pub created_before: Option<String>,
     pub updated_after: Option<String>,
