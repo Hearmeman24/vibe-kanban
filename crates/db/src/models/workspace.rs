@@ -346,6 +346,7 @@ impl Workspace {
                 w.container_ref,
                 w.branch as "branch!",
                 w.agent_working_dir,
+                w.workspace_mode,
                 w.setup_completed_at as "setup_completed_at: DateTime<Utc>",
                 w.created_at as "created_at!: DateTime<Utc>",
                 w.updated_at as "updated_at!: DateTime<Utc>"
