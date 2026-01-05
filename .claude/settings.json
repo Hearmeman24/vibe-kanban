@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/orchestrator-reminder.sh"
+            "command": "/Users/avivkaplan/src/vibe-kanban/.claude/hooks/orchestrator-reminder.sh"
           }
         ]
       }
