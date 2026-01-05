@@ -544,16 +544,23 @@ pub async fn force_push_task_attempt_branch(
         .await?
         .ok_or(RepoError::NotFound)?;
 
-    let container_ref = deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    // Determine the path to push from based on workspace mode
+    let push_path = if workspace.container_ref.is_none() {
+        // Branch-only mode: push from main repo
+        Path::new(&repo.path).to_path_buf()
+    } else {
+        // Worktree mode: push from worktree
+        let container_ref = deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+        let workspace_path = Path::new(&container_ref);
+        workspace_path.join(&repo.name)
+    };
 
     deployment
         .git()
-        .push_to_github(&worktree_path, &workspace.branch, true)?;
+        .push_to_github(&push_path, &workspace.branch, true)?;
     Ok(ResponseJson(ApiResponse::success(())))
 }
 
