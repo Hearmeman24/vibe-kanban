@@ -1349,6 +1349,7 @@ impl TaskServer {
             task_id: workspace.task_id.to_string(),
             workspace_id: workspace.id.to_string(),
             mode: mode_str,
+            executor: executor_for_response,
             repos: repo_infos,
         };
 
