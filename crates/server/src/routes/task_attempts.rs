@@ -118,6 +118,10 @@ pub struct CreateTaskAttemptBody {
     pub repos: Vec<WorkspaceRepoInput>,
     #[serde(default)]
     pub mode: WorkspaceMode,
+    /// Optional override for the executor name stored in the session.
+    /// Used for ORCHESTRATOR_MANAGED mode where the actual executor is not a BaseCodingAgent.
+    #[serde(default)]
+    pub executor_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, ts_rs::TS)]
