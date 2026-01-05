@@ -1191,28 +1191,76 @@ impl TaskServer {
         }
 
         let normalized_executor = executor_trimmed.replace('-', "_").to_ascii_uppercase();
-        let base_executor = match BaseCodingAgent::from_str(&normalized_executor) {
-            Ok(exec) => exec,
-            Err(_) => {
-                return Self::err(
-                    format!("Unknown executor '{executor_trimmed}'."),
-                    None::<String>,
-                );
+
+        // Handle ORCHESTRATOR_MANAGED as a special case
+        let is_orchestrator_managed = normalized_executor == "ORCHESTRATOR_MANAGED";
+
+        // For ORCHESTRATOR_MANAGED, we force branch mode (no worktree/container)
+        let mode_str = if is_orchestrator_managed {
+            // Validate that mode is either not specified or explicitly "branch"
+            if let Some(ref m) = mode {
+                let m_lower = m.trim().to_lowercase();
+                if m_lower != "branch" {
+                    return Self::err(
+                        "ORCHESTRATOR_MANAGED executor requires mode='branch'. Worktree mode is not supported.".to_string(),
+                        None::<String>,
+                    );
+                }
             }
+            "branch".to_string()
+        } else {
+            mode.as_deref().unwrap_or("worktree").trim().to_lowercase()
         };
 
-        let variant = variant.and_then(|v| {
-            let trimmed = v.trim();
-            if trimmed.is_empty() {
-                None
-            } else {
-                Some(trimmed.to_string())
-            }
-        });
+        if mode_str != "worktree" && mode_str != "branch" {
+            return Self::err(
+                format!("Invalid mode '{}'. Valid values: 'worktree', 'branch'", mode_str),
+                None::<String>,
+            );
+        }
 
-        let executor_profile_id = ExecutorProfileId {
-            executor: base_executor,
-            variant,
+        // For ORCHESTRATOR_MANAGED, we don't parse it as BaseCodingAgent since it won't spawn a process.
+        // Instead, we use a placeholder executor for DB records.
+        let (executor_profile_id, executor_for_response) = if is_orchestrator_managed {
+            // Use CLAUDE_CODE as placeholder for DB records (process won't be spawned due to branch mode)
+            let placeholder_executor = BaseCodingAgent::ClaudeCode;
+            (
+                ExecutorProfileId {
+                    executor: placeholder_executor,
+                    variant: variant.and_then(|v| {
+                        let trimmed = v.trim();
+                        if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+                    }),
+                },
+                "ORCHESTRATOR_MANAGED".to_string(),
+            )
+        } else {
+            let base_executor = match BaseCodingAgent::from_str(&normalized_executor) {
+                Ok(exec) => exec,
+                Err(_) => {
+                    return Self::err(
+                        format!("Unknown executor '{executor_trimmed}'."),
+                        None::<String>,
+                    );
+                }
+            };
+
+            let variant = variant.and_then(|v| {
+                let trimmed = v.trim();
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(trimmed.to_string())
+                }
+            });
+
+            (
+                ExecutorProfileId {
+                    executor: base_executor,
+                    variant,
+                },
+                normalized_executor,
+            )
         };
 
         // Clone repos for response building later
