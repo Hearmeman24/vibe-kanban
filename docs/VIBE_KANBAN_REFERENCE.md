@@ -1023,6 +1023,53 @@ const result = await mcp.call("vibe_kanban", "start_workspace_session", {
 - Lightweight task tracking without full isolation
 - Faster startup when worktree overhead isn't needed
 
+**Example (ORCHESTRATOR_MANAGED - Orchestrator Workflow):**
+```typescript
+// Orchestrator creates workspace for a sub-agent to work on
+const result = await mcp.call("vibe_kanban", "start_workspace_session", {
+  task_id: "abc123...",
+  executor: "ORCHESTRATOR_MANAGED",  // No process spawned
+  repos: [
+    {
+      repo_id: "repo123...",
+      base_branch: "main"
+    }
+  ],
+  agent_name: "Ferris"  // Agent that will be dispatched
+});
+// {
+//   task_id: "abc123...",
+//   workspace_id: "workspace456...",
+//   mode: "branch",  // Always branch for ORCHESTRATOR_MANAGED
+//   executor: "ORCHESTRATOR_MANAGED",
+//   repos: [{
+//     repo_id: "repo123...",
+//     branch_name: "vk-workspace456-fix-auth",
+//     base_branch: "main",
+//     working_directory: "/Users/dev/projects/my-repo"
+//   }]
+// }
+
+// Orchestrator then dispatches a sub-agent with the branch info
+await Task({
+  subagent_type: "rust-supervisor",
+  prompt: `
+    Task ID: ${result.task_id}
+    Workspace ID: ${result.workspace_id}
+    Branch: ${result.repos[0].branch_name}
+    Working Directory: ${result.repos[0].working_directory}
+
+    Please checkout the branch and work on the task.
+  `
+});
+```
+
+**Use Cases for ORCHESTRATOR_MANAGED:**
+- Multi-agent orchestration where orchestrator controls sub-agent processes
+- Claude Code sub-agents that run their own process
+- Agents that need workspace tracking without executor management
+- Workflows where the orchestrator dispatches agents via Task() tool
+
 ---
 
 ### Git/PR Tools
