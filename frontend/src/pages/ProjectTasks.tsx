@@ -871,7 +871,7 @@ export function ProjectTasks() {
   };
 
   // Assignee filter dropdown component
-  const assigneeFilterDropdown = uniqueAssignees.length > 0 && (
+  const assigneeFilterDropdown = (
     <div className="flex items-center gap-2 px-4 py-2">
       <Filter className="h-4 w-4 text-muted-foreground" />
       <Select value={assigneeFilter} onValueChange={handleAssigneeFilterChange}>
