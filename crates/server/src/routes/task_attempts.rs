@@ -1412,6 +1412,13 @@ pub async fn run_setup_script(
 ) -> Result<ResponseJson<ApiResponse<ExecutionProcess, RunScriptError>>, ApiError> {
     let pool = &deployment.db().pool;
 
+    // Branch-only workspaces don't support setup scripts (no container/worktree)
+    if workspace.is_branch_only() {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            RunScriptError::BranchOnlyModeNotSupported,
+        )));
+    }
+
     // Check if any non-dev-server processes are already running for this workspace
     if ExecutionProcess::has_running_non_dev_server_processes_for_workspace(pool, workspace.id)
         .await?
