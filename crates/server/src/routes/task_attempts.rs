@@ -195,13 +195,55 @@ pub async fn create_task_attempt(
         .collect();
 
     WorkspaceRepo::create_many(pool, workspace.id, &workspace_repos).await?;
-    if let Err(err) = deployment
-        .container()
-        .start_workspace(&workspace, executor_profile_id.clone())
-        .await
-    {
-        tracing::error!("Failed to start task attempt: {}", err);
-    }
+
+    // Handle mode-specific behavior
+    let workspace = match payload.mode {
+        WorkspaceMode::Worktree => {
+            // Full worktree mode: create container/worktree and start executor
+            if let Err(err) = deployment
+                .container()
+                .start_workspace(&workspace, executor_profile_id.clone())
+                .await
+            {
+                tracing::error!("Failed to start task attempt: {}", err);
+            }
+            // Refetch workspace to get updated container_ref
+            Workspace::find_by_id(pool, workspace.id)
+                .await?
+                .ok_or(SqlxError::RowNotFound)?
+        }
+        WorkspaceMode::Branch => {
+            // Branch-only mode: create git branches (not worktrees), set setup_completed_at immediately
+            for repo_input in &payload.repos {
+                let repo = Repo::find_by_id(pool, repo_input.repo_id)
+                    .await?
+                    .ok_or(RepoError::NotFound)?;
+
+                // Create the branch in the repo's main directory (not in a worktree)
+                // Use git branch command to create branch from target branch
+                if let Err(e) = deployment.git().create_branch(
+                    &repo.path,
+                    &git_branch_name,
+                    &repo_input.target_branch,
+                ) {
+                    tracing::warn!(
+                        "Failed to create branch '{}' in repo '{}': {}. Branch may already exist.",
+                        git_branch_name,
+                        repo.name,
+                        e
+                    );
+                }
+            }
+
+            // Set setup_completed_at immediately for branch mode
+            Workspace::set_setup_completed(pool, workspace.id).await?;
+
+            // Refetch workspace with updated setup_completed_at
+            Workspace::find_by_id(pool, workspace.id)
+                .await?
+                .ok_or(SqlxError::RowNotFound)?
+        }
+    };
 
     deployment
         .track_if_analytics_allowed(
@@ -212,11 +254,16 @@ pub async fn create_task_attempt(
                 "executor": &executor_profile_id.executor,
                 "workspace_id": workspace.id.to_string(),
                 "repository_count": payload.repos.len(),
+                "mode": format!("{:?}", payload.mode).to_lowercase(),
             }),
         )
         .await;
 
-    tracing::info!("Created attempt for task {}", task.id);
+    tracing::info!(
+        "Created attempt for task {} (mode: {:?})",
+        task.id,
+        payload.mode
+    );
 
     Ok(ResponseJson(ApiResponse::success(workspace)))
 }
