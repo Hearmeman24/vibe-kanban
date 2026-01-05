@@ -71,6 +71,18 @@ pub async fn get_image_metadata(
     State(deployment): State<DeploymentImpl>,
     Query(query): Query<ImageMetadataQuery>,
 ) -> Result<ResponseJson<ApiResponse<ImageMetadata>>, ApiError> {
+    // Branch-only workspaces don't have a worktree - images not available
+    if workspace.is_branch_only() {
+        return Ok(ResponseJson(ApiResponse::success(ImageMetadata {
+            exists: false,
+            file_name: None,
+            path: Some(query.path),
+            size_bytes: None,
+            format: None,
+            proxy_url: None,
+        })));
+    }
+
     // Validate path starts with .vibe-images/
     let vibe_images_prefix = format!("{}/", utils::path::VIBE_IMAGES_DIR);
     if !query.path.starts_with(&vibe_images_prefix) {
