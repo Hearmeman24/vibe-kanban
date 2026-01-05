@@ -207,19 +207,17 @@ pub async fn create_github_pr(
     };
 
     // Determine the path to push from based on workspace mode
-    let (worktree_path, workspace_path) = if workspace.container_ref.is_none() {
+    let worktree_path = if workspace.container_ref.is_none() {
         // Branch-only mode: push from main repo
-        let main_repo_path = PathBuf::from(&repo.path);
-        (main_repo_path.clone(), main_repo_path)
+        PathBuf::from(&repo.path)
     } else {
         // Worktree mode: push from worktree
         let container_ref = deployment
             .container()
             .ensure_container_exists(&workspace)
             .await?;
-        let ws_path = PathBuf::from(&container_ref);
-        let wt_path = ws_path.join(repo.name);
-        (wt_path, ws_path)
+        let workspace_path = PathBuf::from(&container_ref);
+        workspace_path.join(repo.name)
     };
 
     match deployment
