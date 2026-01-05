@@ -103,11 +103,26 @@ pub async fn get_task_attempt(
     Ok(ResponseJson(ApiResponse::success(workspace)))
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "lowercase")]
+pub enum WorkspaceMode {
+    Worktree,
+    Branch,
+}
+
+impl Default for WorkspaceMode {
+    fn default() -> Self {
+        Self::Worktree
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, ts_rs::TS)]
 pub struct CreateTaskAttemptBody {
     pub task_id: Uuid,
     pub executor_profile_id: ExecutorProfileId,
     pub repos: Vec<WorkspaceRepoInput>,
+    #[serde(default)]
+    pub mode: WorkspaceMode,
 }
 
 #[derive(Debug, Serialize, Deserialize, ts_rs::TS)]
