@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/block-orchestrator-tools.sh $TOOL_NAME"
+            "command": "/Users/avivkaplan/src/vibe-kanban/.claude/hooks/block-orchestrator-tools.sh $TOOL_NAME"
           }
         ]
       }
