@@ -181,6 +181,9 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
               />
             )}
 
+            {/* Agent Activity Section */}
+            <AgentActivitySection taskId={task.id} />
+
             {/* Comments Section */}
             <TaskCommentsSection taskId={task.id} />
 
