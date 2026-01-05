@@ -360,6 +360,24 @@ impl Workspace {
         Ok(())
     }
 
+    /// Set setup_completed_at to the current time for a workspace.
+    /// Used in branch-only mode where setup completes immediately.
+    pub async fn set_setup_completed(
+        pool: &SqlitePool,
+        workspace_id: Uuid,
+    ) -> Result<(), WorkspaceError> {
+        let now = Utc::now();
+        sqlx::query!(
+            "UPDATE workspaces SET setup_completed_at = $1, updated_at = $1 WHERE id = $2",
+            now,
+            workspace_id,
+        )
+        .execute(pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn resolve_container_ref(
         pool: &SqlitePool,
         container_ref: &str,
