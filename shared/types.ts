@@ -4,6 +4,9 @@
 
 // If you are an AI, and you absolutely have to edit this file, please confirm with the user first.
 
+// TEMPORARY: WorkspaceMode was missing from generated types - should be added to Rust type generator
+export type WorkspaceMode = "worktree" | "branch";
+
 export type SharedTaskResponse = { task: SharedTask, user: UserData | null, };
 
 export type AssigneesQuery = { project_id: string, };
@@ -44,15 +47,43 @@ export type UpdateTag = { tag_name: string | null, content: string | null, };
 
 export type TaskStatus = "todo" | "inprogress" | "inreview" | "done" | "cancelled";
 
-export type Task = { id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_workspace_id: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
+export type Task = { id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_workspace_id: string | null, shared_task_id: string | null, assignee: string | null, 
+/**
+ * JSON-serialized array of AgentMetadataEntry for tracking agent activity
+ */
+agent_metadata: string | null, created_at: string, updated_at: string, };
 
-export type TaskWithAttemptStatus = { has_in_progress_attempt: boolean, last_attempt_failed: boolean, executor: string, id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_workspace_id: string | null, shared_task_id: string | null, created_at: string, updated_at: string, };
+export type TaskWithAttemptStatus = { has_in_progress_attempt: boolean, last_attempt_failed: boolean, executor: string, id: string, project_id: string, title: string, description: string | null, status: TaskStatus, parent_workspace_id: string | null, shared_task_id: string | null, assignee: string | null, 
+/**
+ * JSON-serialized array of AgentMetadataEntry for tracking agent activity
+ */
+agent_metadata: string | null, created_at: string, updated_at: string, };
 
 export type TaskRelationships = { parent_task: Task | null, current_workspace: Workspace, children: Array<Task>, };
 
+export type TaskRelationshipsSimple = { current_task: Task, parent_task: Task | null, children: Array<Task>, };
+
 export type CreateTask = { project_id: string, title: string, description: string | null, status: TaskStatus | null, parent_workspace_id: string | null, image_ids: Array<string> | null, shared_task_id: string | null, };
 
-export type UpdateTask = { title: string | null, description: string | null, status: TaskStatus | null, parent_workspace_id: string | null, image_ids: Array<string> | null, };
+export type UpdateTask = { title: string | null, description: string | null, status: TaskStatus | null, parent_workspace_id: string | null, image_ids: Array<string> | null, assignee: string | null, };
+
+export type AgentMetadataEntry = { 
+/**
+ * The name of the agent (e.g., "Ferris", "Miley", "Bree")
+ */
+agent_name: string, 
+/**
+ * The action performed: "started", "completed", "updated", "commented"
+ */
+action: string, 
+/**
+ * ISO 8601 timestamp when the action occurred
+ */
+timestamp: string, 
+/**
+ * Optional summary of what the agent did
+ */
+summary: string | null, };
 
 export type DraftFollowUpData = { message: string, variant: string | null, };
 
@@ -66,11 +97,37 @@ export type CreateScratch = { payload: ScratchPayload, };
 
 export type UpdateScratch = { payload: ScratchPayload, };
 
+export type TaskHistory = { id: string, task_id: string, field_changed: string, old_value: string | null, new_value: string | null, changed_by: string, changed_at: string, };
+
+export type CreateTaskHistory = { task_id: string, field_changed: string, old_value: string | null, new_value: string | null, changed_by: string, };
+
+export type Webhook = { id: string, project_id: string, url: string, secret: string, 
+/**
+ * JSON array of event types, e.g., ["task_created", "task_updated"]
+ */
+events: string, is_active: boolean, created_at: string, updated_at: string, };
+
+export type CreateWebhook = { project_id: string, url: string, secret: string, 
+/**
+ * List of event types to subscribe to
+ */
+events: Array<WebhookEvent>, };
+
+export type UpdateWebhook = { url: string | null, secret: string | null, events: Array<WebhookEvent> | null, is_active: boolean | null, };
+
+export type WebhookEvent = "task_created" | "task_updated" | "task_completed" | "workspace_started";
+
+export type WebhookDelivery = { id: string, webhook_id: string, event_type: string, payload: string, status: DeliveryStatus, attempts: bigint, last_error: string | null, next_retry_at: string | null, created_at: string, delivered_at: string | null, };
+
+export type CreateWebhookDelivery = { webhook_id: string, event_type: string, payload: string, };
+
+export type DeliveryStatus = "pending" | "success" | "failed" | "retrying";
+
 export type Image = { id: string, file_path: string, original_name: string, mime_type: string | null, size_bytes: bigint, hash: string, created_at: string, updated_at: string, };
 
 export type CreateImage = { file_path: string, original_name: string, mime_type: string | null, size_bytes: bigint, hash: string, };
 
-export type Workspace = { id: string, task_id: string, container_ref: string | null, branch: string, agent_working_dir: string | null, setup_completed_at: string | null, created_at: string, updated_at: string, };
+export type Workspace = { id: string, task_id: string, container_ref: string | null, branch: string, agent_working_dir: string | null, workspace_mode: string, setup_completed_at: string | null, created_at: string, updated_at: string, };
 
 export type Session = { id: string, workspace_id: string, executor: string | null, created_at: string, updated_at: string, };
 
@@ -230,7 +287,33 @@ export type AssignSharedTaskRequest = { new_assignee_user_id: string | null, };
 
 export type ShareTaskResponse = { shared_task_id: string, };
 
+export type BulkUpdateTasksRequest = { task_ids: Array<string>, status: string, };
+
+export type BulkUpdateTasksResponse = { updated_tasks: Array<Task>, count: number, };
+
+export type GetAgentMetadataResponse = { task_id: string, metadata: Array<AgentMetadataEntry>, count: number, };
+
 export type CreateAndStartTaskRequest = { task: CreateTask, executor_profile_id: ExecutorProfileId, repos: Array<WorkspaceRepoInput>, };
+
+export type CreateWebhookRequest = { 
+/**
+ * The URL to send webhook payloads to
+ */
+url: string, 
+/**
+ * List of event types to subscribe to
+ */
+events: Array<WebhookEvent>, 
+/**
+ * Optional secret for signing payloads. Auto-generated if not provided.
+ */
+secret: string | null, };
+
+export type UpdateWebhookRequest = { url: string | null, secret: string | null, events: Array<WebhookEvent> | null, is_active: boolean | null, };
+
+export type WebhookResponse = { id: string, project_id: string, url: string, secret: string, events: Array<WebhookEvent>, is_active: boolean, created_at: string, updated_at: string, };
+
+export type TestWebhookResponse = { message: string, };
 
 export type CreateGitHubPrRequest = { title: string, body: string | null, target_branch: string | null, draft: boolean | null, repo_id: string, auto_generate_description: boolean, };
 
@@ -238,7 +321,7 @@ export type ImageResponse = { id: string, file_path: string, original_name: stri
 
 export type ImageMetadata = { exists: boolean, file_name: string | null, path: string | null, size_bytes: bigint | null, format: string | null, proxy_url: string | null, };
 
-export type CreateTaskAttemptBody = { task_id: string, executor_profile_id: ExecutorProfileId, repos: Array<WorkspaceRepoInput>, };
+export type CreateTaskAttemptBody = { task_id: string, executor_profile_id: ExecutorProfileId, repos: Array<WorkspaceRepoInput>, mode: WorkspaceMode, };
 
 export type WorkspaceRepoInput = { repo_id: string, target_branch: string, };
 
