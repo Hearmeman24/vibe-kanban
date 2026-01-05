@@ -1394,17 +1394,29 @@ This allows periodic polling to auto-complete tasks when PRs are merged.
 
 ### Q1: Does `start_workspace_session` REQUIRE creating a worktree?
 
-**Answer:** Yes, if you want to use the workspace for actual development.
+**Answer:** No! As of the latest version, you can choose between two modes:
+
+**Worktree Mode (default):**
+- Creates a git worktree for isolated development
+- Triggers async container/worktree creation
+- Best for full workspace isolation
+
+**Branch Mode:**
+- Creates only the git branch (no worktree)
+- No container or worktree created
+- `setup_completed_at` is set immediately
+- Agent works in the original repo directory
+- Best for agents already running in the repo
 
 **Details:**
 - `start_workspace_session` creates the `Workspace` database record immediately
-- It triggers **async** container/worktree creation
-- The worktree creation happens via the container service
-- If containerization is disabled, worktree creation may be skipped
-- You can query the workspace immediately after creation, but the worktree may not exist yet
+- For worktree mode: triggers **async** container/worktree creation
+- For branch mode: creates branch synchronously and completes immediately
+- You can query the workspace immediately after creation
 
 **Best Practice:**
-Wait for `workspace.setup_completed_at` to be set before assuming the worktree is ready.
+- For worktree mode: Wait for `workspace.setup_completed_at` to be set
+- For branch mode: Ready to use immediately (setup completes synchronously)
 
 ---
 
