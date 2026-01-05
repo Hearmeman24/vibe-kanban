@@ -137,6 +137,7 @@ fn generate_types_content() -> String {
         server::routes::task_attempts::pr::CreateGitHubPrRequest::decl(),
         server::routes::images::ImageResponse::decl(),
         server::routes::images::ImageMetadata::decl(),
+        server::routes::task_attempts::WorkspaceMode::decl(),
         server::routes::task_attempts::CreateTaskAttemptBody::decl(),
         server::routes::task_attempts::WorkspaceRepoInput::decl(),
         server::routes::task_attempts::RunAgentSetupRequest::decl(),
