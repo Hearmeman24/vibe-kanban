@@ -334,6 +334,12 @@ WHERE t.project_id = "#,
             }
         }
 
+        // Add assignee filter
+        if let Some(assignee_name) = assignee {
+            query_builder.push(" AND t.assignee = ");
+            query_builder.push_bind(assignee_name);
+        }
+
         // Add date filters
         if let Some(created_after) = created_after {
             query_builder.push(" AND t.created_at >= ");
