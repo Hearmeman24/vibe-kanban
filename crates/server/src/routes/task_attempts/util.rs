@@ -14,6 +14,7 @@ use crate::{DeploymentImpl, error::ApiError};
 /// Reset all repository worktrees to the state before the given process.
 /// For each repo, finds the before_head_commit from the target process,
 /// or falls back to the previous process's after_head_commit.
+/// Note: This function is only for worktree-mode workspaces.
 pub async fn restore_worktrees_to_process(
     deployment: &DeploymentImpl,
     pool: &SqlitePool,
@@ -22,6 +23,15 @@ pub async fn restore_worktrees_to_process(
     perform_git_reset: bool,
     force_when_dirty: bool,
 ) -> Result<(), ApiError> {
+    // Branch-only workspaces don't have worktrees to restore
+    if workspace.is_branch_only() {
+        tracing::debug!(
+            "Skipping worktree restore for branch-only workspace {}",
+            workspace.id
+        );
+        return Ok(());
+    }
+
     let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
 
     // Get all repo states for the target process
