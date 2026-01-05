@@ -413,6 +413,12 @@ export function ProjectTasks() {
       );
     };
 
+    const matchesAssignee = (taskAssignee: string | null | undefined): boolean => {
+      if (assigneeFilter === 'all') return true;
+      if (assigneeFilter === 'unassigned') return !taskAssignee;
+      return taskAssignee === assigneeFilter;
+    };
+
     tasks.forEach((task) => {
       const statusKey = normalizeStatus(task.status);
       const sharedTask = task.shared_task_id
