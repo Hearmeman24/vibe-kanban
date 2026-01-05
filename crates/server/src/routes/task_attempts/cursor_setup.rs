@@ -22,6 +22,18 @@ pub async fn run_cursor_setup(
     deployment: &crate::DeploymentImpl,
     workspace: &Workspace,
 ) -> Result<ExecutionProcess, ApiError> {
+    // Branch-only workspaces don't support setup scripts (no container/worktree)
+    if workspace.is_branch_only() {
+        #[cfg(unix)]
+        return Err(ApiError::Executor(
+            executors::executors::ExecutorError::SetupHelperNotSupported,
+        ));
+        #[cfg(not(unix))]
+        return Err(ApiError::Executor(
+            executors::executors::ExecutorError::SetupHelperNotSupported,
+        ));
+    }
+
     let latest_process = ExecutionProcess::find_latest_by_workspace_and_run_reason(
         &deployment.db().pool,
         workspace.id,
