@@ -110,10 +110,14 @@ pub async fn follow_up(
 
     tracing::info!("{:?}", workspace);
 
-    deployment
-        .container()
-        .ensure_container_exists(&workspace)
-        .await?;
+    // Only ensure container exists for worktree-mode workspaces
+    // Branch-only workspaces are managed by the orchestrator
+    if !workspace.is_branch_only() {
+        deployment
+            .container()
+            .ensure_container_exists(&workspace)
+            .await?;
+    }
 
     // Get executor profile data from the latest CodingAgent process in this session
     let initial_executor_profile_id =
