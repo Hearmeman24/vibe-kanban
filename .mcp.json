@@ -2,7 +2,10 @@
   "mcpServers": {
     "vibe_kanban": {
       "command": "./target/release/mcp_task_server",
-      "args": []
+      "args": [],
+      "env": {
+        "VIBE_BACKEND_URL": "http://localhost:3000"
+      }
     }
   }
 }
