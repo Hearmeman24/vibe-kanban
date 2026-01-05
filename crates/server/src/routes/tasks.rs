@@ -375,6 +375,7 @@ pub async fn create_task_and_start(
         &CreateWorkspace {
             branch: git_branch_name,
             agent_working_dir,
+            workspace_mode: "worktree".to_string(),
         },
         attempt_id,
         task.id,
