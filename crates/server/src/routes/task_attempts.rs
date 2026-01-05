@@ -1402,6 +1402,7 @@ pub async fn stop_task_attempt_execution(
 pub enum RunScriptError {
     NoScriptConfigured,
     ProcessAlreadyRunning,
+    BranchOnlyModeNotSupported,
 }
 
 #[axum::debug_handler]
