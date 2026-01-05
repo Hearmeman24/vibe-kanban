@@ -1,6 +1,7 @@
 // Import all necessary types from shared types
 
 import {
+  AgentMetadataEntry,
   ApprovalStatus,
   ApiResponse,
   Config,
