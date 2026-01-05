@@ -1,6 +1,7 @@
 use std::{future::Future, str::FromStr};
 
 use db::models::{
+    merge::MergeStatus,
     project::Project,
     repo::Repo,
     tag::Tag,
