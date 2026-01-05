@@ -26,4 +26,7 @@ fn main() {
 
         fs::write(dist_path.join("index.html"), dummy_html).unwrap();
     }
+
+    // Force recompilation when frontend/dist contents change
+    println!("cargo:rerun-if-changed=../../frontend/dist");
 }
