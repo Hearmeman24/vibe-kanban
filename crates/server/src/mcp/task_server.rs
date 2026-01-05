@@ -497,6 +497,100 @@ pub struct GetAgentMetadataResponse {
     pub count: usize,
 }
 
+// ============================================================================
+// Push/PR MCP Tool Request/Response Structs
+// ============================================================================
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct PushWorkspaceBranchRequest {
+    #[schemars(description = "The workspace ID to push. This is required!")]
+    pub workspace_id: Uuid,
+    #[schemars(description = "The repository ID to push. This is required!")]
+    pub repo_id: Uuid,
+    #[schemars(description = "Whether to force push (overwrite remote). Default: false")]
+    pub force: Option<bool>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct PushWorkspaceBranchResponse {
+    #[schemars(description = "Whether the push was successful")]
+    pub success: bool,
+    #[schemars(description = "The branch name that was pushed")]
+    pub branch_name: String,
+    #[schemars(description = "The remote URL the branch was pushed to")]
+    pub remote_url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct CreateWorkspacePrRequest {
+    #[schemars(description = "The workspace ID to create a PR for. This is required!")]
+    pub workspace_id: Uuid,
+    #[schemars(description = "The repository ID to create a PR for. This is required!")]
+    pub repo_id: Uuid,
+    #[schemars(description = "The title of the pull request. This is required!")]
+    pub title: String,
+    #[schemars(description = "Optional body/description for the pull request")]
+    pub body: Option<String>,
+    #[schemars(description = "Target branch for the PR. Defaults to the workspace's target branch")]
+    pub target_branch: Option<String>,
+    #[schemars(description = "Whether to create the PR as a draft. Default: false")]
+    pub draft: Option<bool>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct CreateWorkspacePrResponse {
+    #[schemars(description = "The PR number")]
+    pub pr_number: i64,
+    #[schemars(description = "The URL of the created PR")]
+    pub pr_url: String,
+    #[schemars(description = "The status of the PR (e.g., 'open')")]
+    pub status: String,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GetWorkspacePrStatusRequest {
+    #[schemars(description = "The workspace ID to check PR status for. This is required!")]
+    pub workspace_id: Uuid,
+    #[schemars(description = "The repository ID to check PR status for. This is required!")]
+    pub repo_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct GetWorkspacePrStatusResponse {
+    #[schemars(description = "Whether a PR exists for this workspace/repo")]
+    pub has_pr: bool,
+    #[schemars(description = "The PR number (if exists)")]
+    pub pr_number: Option<i64>,
+    #[schemars(description = "The PR URL (if exists)")]
+    pub pr_url: Option<String>,
+    #[schemars(description = "The PR status: 'open', 'merged', 'closed', or 'unknown'")]
+    pub status: Option<String>,
+    #[schemars(description = "When the PR was merged (if merged)")]
+    pub merged_at: Option<String>,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct RefreshWorkspacePrStatusRequest {
+    #[schemars(description = "The workspace ID to refresh PR status for. This is required!")]
+    pub workspace_id: Uuid,
+    #[schemars(description = "The repository ID to refresh PR status for. This is required!")]
+    pub repo_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct RefreshWorkspacePrStatusResponse {
+    #[schemars(description = "The PR number")]
+    pub pr_number: i64,
+    #[schemars(description = "The PR status before refresh")]
+    pub previous_status: String,
+    #[schemars(description = "The PR status after refresh")]
+    pub current_status: String,
+    #[schemars(description = "Whether the status changed")]
+    pub status_changed: bool,
+    #[schemars(description = "Whether the task was updated (moved to 'done' if PR merged and task was 'inreview')")]
+    pub task_updated: bool,
+}
+
 #[derive(Debug, Clone)]
 pub struct TaskServer {
     client: reqwest::Client,
