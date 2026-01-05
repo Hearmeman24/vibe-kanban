@@ -91,6 +91,11 @@ FROM rust-types-builder AS rust-builder
 # This is critical: rust-embed embeds frontend/dist at compile time
 COPY --from=node-builder /app/frontend/dist ./frontend/dist
 
+# Force recompilation of server crate to pick up the real frontend assets
+# The server lib was already compiled in rust-types-builder with a dummy frontend,
+# and cargo doesn't detect the copied frontend/dist as a change trigger
+RUN cargo clean -p server
+
 # Build server binary (now with frontend assets available for embedding)
 RUN cargo build --release --bin server
 
