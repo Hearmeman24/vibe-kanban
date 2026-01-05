@@ -746,6 +746,27 @@ pub async fn append_agent_metadata(
     Ok(ResponseJson(ApiResponse::success(updated_task)))
 }
 
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct GetAgentMetadataResponse {
+    pub task_id: Uuid,
+    pub metadata: Vec<AgentMetadataEntry>,
+    pub count: usize,
+}
+
+pub async fn get_agent_metadata(
+    Extension(task): Extension<Task>,
+    State(_deployment): State<DeploymentImpl>,
+) -> Result<ResponseJson<ApiResponse<GetAgentMetadataResponse>>, ApiError> {
+    let metadata = task.get_agent_metadata_entries();
+    let count = metadata.len();
+
+    Ok(ResponseJson(ApiResponse::success(GetAgentMetadataResponse {
+        task_id: task.id,
+        metadata,
+        count,
+    })))
+}
+
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let task_actions_router = Router::new()
         .route("/", put(update_task))
