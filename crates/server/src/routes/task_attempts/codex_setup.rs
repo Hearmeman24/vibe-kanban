@@ -22,6 +22,11 @@ pub async fn run_codex_setup(
     workspace: &Workspace,
     codex: &Codex,
 ) -> Result<ExecutionProcess, ApiError> {
+    // Branch-only workspaces don't support setup scripts (no container/worktree)
+    if workspace.is_branch_only() {
+        return Err(ApiError::Executor(ExecutorError::SetupHelperNotSupported));
+    }
+
     let latest_process = ExecutionProcess::find_latest_by_workspace_and_run_reason(
         &deployment.db().pool,
         workspace.id,
