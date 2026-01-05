@@ -1444,6 +1444,55 @@ impl GitService {
         }
     }
 
+    /// Create a new local branch from a base branch without checking it out.
+    /// If the base branch is remote (e.g., origin/main), uses the remote commit.
+    /// If the base branch is local, uses the local commit.
+    pub fn create_branch(
+        &self,
+        repo_path: &Path,
+        branch_name: &str,
+        base_branch: &str,
+    ) -> Result<(), GitServiceError> {
+        let repo = self.open_repo(repo_path)?;
+
+        // Find the commit to branch from
+        let commit = match repo.find_branch(base_branch, BranchType::Local) {
+            Ok(branch) => {
+                // Local branch found
+                let reference = branch.get();
+                reference
+                    .peel_to_commit()
+                    .map_err(|_| GitServiceError::BranchNotFound(base_branch.to_string()))?
+            }
+            Err(_) => {
+                // Try remote branch
+                let default_remote = self.default_remote_name(&repo);
+                let remote_branch_name = if base_branch.contains('/') {
+                    base_branch.to_string()
+                } else {
+                    format!("{}/{}", default_remote, base_branch)
+                };
+
+                match repo.find_branch(&remote_branch_name, BranchType::Remote) {
+                    Ok(branch) => {
+                        let reference = branch.get();
+                        reference
+                            .peel_to_commit()
+                            .map_err(|_| GitServiceError::BranchNotFound(base_branch.to_string()))?
+                    }
+                    Err(_) => {
+                        return Err(GitServiceError::BranchNotFound(base_branch.to_string()));
+                    }
+                }
+            }
+        };
+
+        // Create the new branch
+        repo.branch(branch_name, &commit, false)?;
+
+        Ok(())
+    }
+
     pub fn check_remote_branch_exists(
         &self,
         repo_path: &Path,
