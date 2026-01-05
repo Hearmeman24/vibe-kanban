@@ -2008,7 +2008,7 @@ impl TaskServer {
         // Find the status for the requested repo
         let repo_status = statuses.iter().find(|s| s.repo_id == repo_id);
 
-        let (merge_id, pr_number, previous_status) = if let Some(status) = repo_status {
+        let (pr_number, previous_status) = if let Some(status) = repo_status {
             let pr_merge = status
                 .merges
                 .iter()
@@ -2016,7 +2016,7 @@ impl TaskServer {
 
             if let Some(merge) = pr_merge {
                 let pr_info = merge.pr_info.as_ref().unwrap();
-                (merge.id, pr_info.number, pr_info.status.clone())
+                (pr_info.number, pr_info.status.clone())
             } else {
                 return Self::err(
                     "No PR found for this workspace/repo combination".to_string(),
