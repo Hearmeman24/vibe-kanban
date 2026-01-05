@@ -46,6 +46,12 @@ pub async fn upload_image(
     // Process upload (store in cache, associate with task)
     let image_response = process_image_upload(&deployment, multipart, Some(task.id)).await?;
 
+    // Branch-only workspaces don't have a worktree to copy images to
+    // Just return the image response without copying
+    if workspace.is_branch_only() {
+        return Ok(ResponseJson(ApiResponse::success(image_response)));
+    }
+
     let container_ref = deployment
         .container()
         .ensure_container_exists(&workspace)
