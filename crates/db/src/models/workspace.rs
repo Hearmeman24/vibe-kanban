@@ -133,6 +133,7 @@ pub struct WorkspaceContext {
 pub struct CreateWorkspace {
     pub branch: String,
     pub agent_working_dir: Option<String>,
+    pub workspace_mode: String,
 }
 
 impl Workspace {
