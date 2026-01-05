@@ -141,6 +141,16 @@ impl Workspace {
         Task::find_by_id(pool, self.task_id).await
     }
 
+    /// Returns true if this workspace is branch-only (no worktree)
+    pub fn is_branch_only(&self) -> bool {
+        self.workspace_mode == "branch"
+    }
+
+    /// Returns true if this workspace uses worktree mode
+    pub fn uses_worktree(&self) -> bool {
+        self.workspace_mode == "worktree"
+    }
+
     /// Fetch all workspaces, optionally filtered by task_id. Newest first.
     pub async fn fetch_all(
         pool: &SqlitePool,
@@ -154,6 +164,7 @@ impl Workspace {
                               container_ref,
                               branch,
                               agent_working_dir,
+                              workspace_mode,
                               setup_completed_at AS "setup_completed_at: DateTime<Utc>",
                               created_at AS "created_at!: DateTime<Utc>",
                               updated_at AS "updated_at!: DateTime<Utc>"
@@ -172,6 +183,7 @@ impl Workspace {
                               container_ref,
                               branch,
                               agent_working_dir,
+                              workspace_mode,
                               setup_completed_at AS "setup_completed_at: DateTime<Utc>",
                               created_at AS "created_at!: DateTime<Utc>",
                               updated_at AS "updated_at!: DateTime<Utc>"
