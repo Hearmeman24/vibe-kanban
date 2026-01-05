@@ -453,6 +453,49 @@ pub struct GetTaskHistoryResponse {
     pub task_id: String,
 }
 
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct AddAgentMetadataRequest {
+    #[schemars(description = "The ID of the task to add agent metadata to. This is required!")]
+    pub task_id: Uuid,
+    #[schemars(description = "The name of the agent (e.g., 'Ferris', 'Miley', 'Bree'). This is required!")]
+    pub agent_name: String,
+    #[schemars(description = "The action performed: 'started', 'completed', 'updated', 'commented', etc. This is required!")]
+    pub action: String,
+    #[schemars(description = "Optional summary of what the agent did")]
+    pub summary: Option<String>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct AgentMetadataSummary {
+    #[schemars(description = "The name of the agent")]
+    pub agent_name: String,
+    #[schemars(description = "The action performed")]
+    pub action: String,
+    #[schemars(description = "ISO 8601 timestamp when the action occurred")]
+    pub timestamp: String,
+    #[schemars(description = "Optional summary of what the agent did")]
+    pub summary: Option<String>,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct AddAgentMetadataResponse {
+    pub task_id: String,
+    pub entry: AgentMetadataSummary,
+}
+
+#[derive(Debug, Deserialize, schemars::JsonSchema)]
+pub struct GetAgentMetadataRequest {
+    #[schemars(description = "The ID of the task to get agent metadata for. This is required!")]
+    pub task_id: Uuid,
+}
+
+#[derive(Debug, Serialize, schemars::JsonSchema)]
+pub struct GetAgentMetadataResponse {
+    pub task_id: String,
+    pub metadata: Vec<AgentMetadataSummary>,
+    pub count: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct TaskServer {
     client: reqwest::Client,
