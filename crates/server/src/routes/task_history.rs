@@ -20,8 +20,5 @@ pub async fn get_task_history(
 }
 
 pub fn router(_deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
-    Router::new().nest(
-        "/tasks/{task_id}/history",
-        Router::new().route("/", get(get_task_history)),
-    )
+    Router::new().route("/tasks/{task_id}/history", get(get_task_history))
 }
