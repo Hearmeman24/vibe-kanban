@@ -111,6 +111,8 @@ pub struct ListTasksAdvancedRequest {
         description = "Filter by multiple statuses: 'todo', 'inprogress', 'inreview', 'done', 'cancelled'"
     )]
     pub statuses: Option<Vec<String>>,
+    #[schemars(description = "Filter by assignee name (exact match)")]
+    pub assignee: Option<String>,
     #[schemars(description = "Filter tasks created after this timestamp (RFC3339 format)")]
     pub created_after: Option<String>,
     #[schemars(description = "Filter tasks created before this timestamp (RFC3339 format)")]
