@@ -1,4 +1,9 @@
 {
+  "orchestrator": {
+    "managedBy": "Tarea gestionada por: {{agents}}",
+    "noAgent": "Tarea gestionada por orquestador",
+    "description": "Este espacio de trabajo es gestionado externamente por un orquestador. El historial de conversacion no esta disponible para tareas gestionadas por orquestador."
+  },
   "actions": {
     "addTask": "Agregar tarea"
   },
