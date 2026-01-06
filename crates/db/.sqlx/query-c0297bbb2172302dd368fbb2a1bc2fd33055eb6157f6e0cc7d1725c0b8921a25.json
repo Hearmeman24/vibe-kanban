@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "INSERT INTO workspaces (id, task_id, container_ref, branch, agent_working_dir, setup_completed_at, workspace_mode)\n               VALUES ($1, $2, $3, $4, $5, $6, $7)\n               RETURNING id as \"id!: Uuid\", task_id as \"task_id!: Uuid\", container_ref, branch, agent_working_dir, setup_completed_at as \"setup_completed_at: DateTime<Utc>\", workspace_mode, created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\"",
+  "query": "INSERT INTO workspaces (id, task_id, container_ref, branch, agent_working_dir, workspace_mode, setup_completed_at)\n               VALUES ($1, $2, $3, $4, $5, $6, $7)\n               RETURNING id as \"id!: Uuid\", task_id as \"task_id!: Uuid\", container_ref, branch, agent_working_dir, workspace_mode, setup_completed_at as \"setup_completed_at: DateTime<Utc>\", created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\"",
   "describe": {
     "columns": [
       {
@@ -29,14 +29,14 @@
         "type_info": "Text"
       },
       {
-        "name": "setup_completed_at: DateTime<Utc>",
+        "name": "workspace_mode",
         "ordinal": 5,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "workspace_mode",
+        "name": "setup_completed_at: DateTime<Utc>",
         "ordinal": 6,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
         "name": "created_at!: DateTime<Utc>",
@@ -58,11 +58,11 @@
       true,
       false,
       true,
-      true,
       false,
+      true,
       false,
       false
     ]
   },
-  "hash": "247f2c4ab519f112802d3423690277ace42576a9f4c6eb87db4d9ec349e2f261"
+  "hash": "c0297bbb2172302dd368fbb2a1bc2fd33055eb6157f6e0cc7d1725c0b8921a25"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT  w.id                AS \"id!: Uuid\",\n                       w.task_id           AS \"task_id!: Uuid\",\n                       w.container_ref,\n                       w.branch,\n                       w.agent_working_dir,\n                       w.setup_completed_at AS \"setup_completed_at: DateTime<Utc>\",\n                       w.workspace_mode,\n                       w.created_at        AS \"created_at!: DateTime<Utc>\",\n                       w.updated_at        AS \"updated_at!: DateTime<Utc>\"\n               FROM    workspaces w\n               JOIN    tasks t ON w.task_id = t.id\n               JOIN    projects p ON t.project_id = p.id\n               WHERE   w.id = $1 AND t.id = $2 AND p.id = $3",
+  "query": "SELECT id AS \"id!: Uuid\",\n                              task_id AS \"task_id!: Uuid\",\n                              container_ref,\n                              branch,\n                              agent_working_dir,\n                              workspace_mode,\n                              setup_completed_at AS \"setup_completed_at: DateTime<Utc>\",\n                              created_at AS \"created_at!: DateTime<Utc>\",\n                              updated_at AS \"updated_at!: DateTime<Utc>\"\n                       FROM workspaces\n                       WHERE task_id = $1\n                       ORDER BY created_at DESC",
   "describe": {
     "columns": [
       {
@@ -29,14 +29,14 @@
         "type_info": "Text"
       },
       {
-        "name": "setup_completed_at: DateTime<Utc>",
+        "name": "workspace_mode",
         "ordinal": 5,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "workspace_mode",
+        "name": "setup_completed_at: DateTime<Utc>",
         "ordinal": 6,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
         "name": "created_at!: DateTime<Utc>",
@@ -50,7 +50,7 @@
       }
     ],
     "parameters": {
-      "Right": 3
+      "Right": 1
     },
     "nullable": [
       true,
@@ -58,11 +58,11 @@
       true,
       false,
       true,
-      true,
       false,
+      true,
       false,
       false
     ]
   },
-  "hash": "505ef5ba5a574fcbbe9656e576fd0491d4f09182745006b68873b832661f7025"
+  "hash": "b5d401e46860852418bea42d1728319b162c31c18b681d4dda47ad0722c7facf"
 }

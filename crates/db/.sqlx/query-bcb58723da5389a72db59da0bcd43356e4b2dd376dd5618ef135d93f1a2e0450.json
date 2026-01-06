@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT  id                AS \"id!: Uuid\",\n                       task_id           AS \"task_id!: Uuid\",\n                       container_ref,\n                       branch,\n                       agent_working_dir,\n                       setup_completed_at AS \"setup_completed_at: DateTime<Utc>\",\n                       workspace_mode,\n                       created_at        AS \"created_at!: DateTime<Utc>\",\n                       updated_at        AS \"updated_at!: DateTime<Utc>\"\n               FROM    workspaces\n               WHERE   id = $1",
+  "query": "SELECT  id                AS \"id!: Uuid\",\n                       task_id           AS \"task_id!: Uuid\",\n                       container_ref,\n                       branch,\n                       agent_working_dir,\n                       workspace_mode,\n                       setup_completed_at AS \"setup_completed_at: DateTime<Utc>\",\n                       created_at        AS \"created_at!: DateTime<Utc>\",\n                       updated_at        AS \"updated_at!: DateTime<Utc>\"\n               FROM    workspaces\n               WHERE   rowid = $1",
   "describe": {
     "columns": [
       {
@@ -29,14 +29,14 @@
         "type_info": "Text"
       },
       {
-        "name": "setup_completed_at: DateTime<Utc>",
+        "name": "workspace_mode",
         "ordinal": 5,
-        "type_info": "Datetime"
+        "type_info": "Text"
       },
       {
-        "name": "workspace_mode",
+        "name": "setup_completed_at: DateTime<Utc>",
         "ordinal": 6,
-        "type_info": "Text"
+        "type_info": "Datetime"
       },
       {
         "name": "created_at!: DateTime<Utc>",
@@ -58,11 +58,11 @@
       true,
       false,
       true,
-      true,
       false,
+      true,
       false,
       false
     ]
   },
-  "hash": "3d070114bcb7e0439246bb28a35e1359d00d6ce2afa53f0465d6c74460515890"
+  "hash": "bcb58723da5389a72db59da0bcd43356e4b2dd376dd5618ef135d93f1a2e0450"
 }
