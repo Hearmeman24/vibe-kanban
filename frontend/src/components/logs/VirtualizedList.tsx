@@ -125,13 +125,34 @@ const VirtualizedList = ({ attempt, task }: VirtualizedListProps) => {
     }
   };
 
-  useConversationHistory({ attempt, onEntriesUpdated });
+  // Only use conversation history for non-orchestrator-managed workspaces
+  useConversationHistory({
+    attempt,
+    onEntriesUpdated: isOrchestratorManaged ? () => {} : onEntriesUpdated,
+  });
 
   const messageListRef = useRef<VirtuosoMessageListMethods | null>(null);
   const messageListContext = useMemo(
     () => ({ attempt, task }),
     [attempt, task]
   );
+
+  // For ORCHESTRATOR_MANAGED workspaces, show agent info instead of conversation history
+  if (isOrchestratorManaged) {
+    return (
+      <div className="flex-1 flex flex-col gap-3 justify-center items-center p-8 text-center">
+        <Bot className="h-12 w-12 text-muted-foreground" />
+        <p className="text-muted-foreground text-lg">
+          {agentNames.length > 0
+            ? t('orchestrator.managedBy', { agents: agentNames.join(', ') })
+            : t('orchestrator.noAgent')}
+        </p>
+        <p className="text-muted-foreground/70 text-sm max-w-md">
+          {t('orchestrator.description')}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <ApprovalFormProvider>
