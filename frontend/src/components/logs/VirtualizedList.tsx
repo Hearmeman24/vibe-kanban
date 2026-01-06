@@ -7,6 +7,7 @@ import {
   VirtuosoMessageListProps,
 } from '@virtuoso.dev/message-list';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import DisplayConversationEntry from '../NormalizedConversation/DisplayConversationEntry';
 import { useEntries } from '@/contexts/EntriesContext';
@@ -15,8 +16,8 @@ import {
   PatchTypeWithKey,
   useConversationHistory,
 } from '@/hooks/useConversationHistory';
-import { Loader2 } from 'lucide-react';
-import { TaskWithAttemptStatus } from 'shared/types';
+import { Bot, Loader2 } from 'lucide-react';
+import { AgentMetadataEntry, TaskWithAttemptStatus } from 'shared/types';
 import type { WorkspaceWithSession } from '@/types/attempt';
 import { ApprovalFormProvider } from '@/contexts/ApprovalFormContext';
 
