@@ -12,7 +12,9 @@
         "mcp": "MCP 服务器",
         "mcpDesc": "模型上下文协议服务器",
         "organizations": "组织设置",
-        "organizationsDesc": "管理组织成员和权限"
+        "organizationsDesc": "管理组织成员和权限",
+        "agents-configuration": "代理配置",
+        "agents-configurationDesc": "管理代理资料和头像"
       }
     },
     "general": {
