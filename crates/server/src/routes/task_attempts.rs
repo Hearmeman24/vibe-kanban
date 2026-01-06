@@ -809,22 +809,28 @@ pub async fn get_task_attempt_branch_status(
             .git()
             .find_branch_type(&repo.path, &target_branch)?;
 
-        let (commits_ahead, commits_behind) = match target_branch_type {
+        let (commits_ahead, commits_behind, branch_deleted) = match target_branch_type {
             BranchType::Local => {
-                let (a, b) = deployment.git().get_branch_status(
+                match deployment.git().get_branch_status(
                     &repo.path,
                     &workspace.branch,
                     &target_branch,
-                )?;
-                (Some(a), Some(b))
+                ) {
+                    Ok((a, b)) => (Some(a), Some(b), false),
+                    Err(GitServiceError::BranchNotFound(_)) => (None, None, true),
+                    Err(e) => return Err(ApiError::GitService(e)),
+                }
             }
             BranchType::Remote => {
-                let (ahead, behind) = deployment.git().get_remote_branch_status(
+                match deployment.git().get_remote_branch_status(
                     &repo.path,
                     &workspace.branch,
                     Some(&target_branch),
-                )?;
-                (Some(ahead), Some(behind))
+                ) {
+                    Ok((a, b)) => (Some(a), Some(b), false),
+                    Err(GitServiceError::BranchNotFound(_)) => (None, None, true),
+                    Err(e) => return Err(ApiError::GitService(e)),
+                }
             }
         };
 
