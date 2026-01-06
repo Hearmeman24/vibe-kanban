@@ -3,7 +3,9 @@
   "orchestrator": {
     "managedBy": "Task managed by: {{agents}}",
     "noAgent": "Task managed by orchestrator",
-    "description": "This workspace is managed externally by an orchestrator. Conversation history is not available for orchestrator-managed tasks."
+    "description": "This workspace is managed externally by an orchestrator. Conversation history is not available for orchestrator-managed tasks.",
+    "mergeDisabled": "Merge is disabled for orchestrator-managed workspaces",
+    "rebaseDisabled": "Rebase is disabled for orchestrator-managed workspaces"
   },
   "empty": {
     "noTasks": "No tasks found for this project.",
