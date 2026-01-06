@@ -350,16 +350,6 @@ export function ProjectTasks() {
   const showSharedTasks = searchParams.get('shared') !== 'off';
   const assigneeFilter = searchParams.get('assignee') || 'all';
 
-  // Extract unique assignees from tasks
-  const uniqueAssignees = useMemo(() => {
-    const assignees = new Set<string>();
-    tasks.forEach((task) => {
-      if (task.assignee) {
-        assignees.add(task.assignee);
-      }
-    });
-    return Array.from(assignees).sort();
-  }, [tasks]);
 
   // Handler to update assignee filter in URL
   const handleAssigneeFilterChange = useCallback(
