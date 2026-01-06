@@ -1,4 +1,9 @@
 {
+  "orchestrator": {
+    "managedBy": "작업 관리자: {{agents}}",
+    "noAgent": "오케스트레이터가 관리하는 작업",
+    "description": "이 작업 공간은 오케스트레이터에 의해 외부에서 관리됩니다. 오케스트레이터 관리 작업에는 대화 기록을 사용할 수 없습니다."
+  },
   "actions": {
     "addTask": "작업 추가"
   },
