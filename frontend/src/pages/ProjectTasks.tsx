@@ -348,17 +348,33 @@ export function ProjectTasks() {
   const hasSearch = Boolean(searchQuery.trim());
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const showSharedTasks = searchParams.get('shared') !== 'off';
-  const assigneeFilter = searchParams.get('assignee') || 'all';
+  // Agent filter from URL - parse comma-separated list of agent names
+  const agentFilterParam = searchParams.get('agents');
+  const selectedAgents = useMemo(() => {
+    if (!agentFilterParam) return [];
+    return agentFilterParam.split(',').filter(Boolean);
+  }, [agentFilterParam]);
+
+  // Calculate task counts by assignee for the avatar filter
+  const taskCountsByAssignee = useMemo(() => {
+    const counts: Record<string, number> = {};
+    tasks.forEach((task) => {
+      if (task.assignee) {
+        counts[task.assignee] = (counts[task.assignee] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [tasks]);
 
 
-  // Handler to update assignee filter in URL
-  const handleAssigneeFilterChange = useCallback(
-    (value: string) => {
+  // Handler to update selected agents in URL
+  const handleAgentSelectionChange = useCallback(
+    (agents: string[]) => {
       const params = new URLSearchParams(searchParams);
-      if (value === 'all') {
-        params.delete('assignee');
+      if (agents.length === 0) {
+        params.delete('agents');
       } else {
-        params.set('assignee', value);
+        params.set('agents', agents.join(','));
       }
       setSearchParams(params, { replace: true });
     },
@@ -397,13 +413,9 @@ export function ProjectTasks() {
       );
     };
 
-    const matchesAssignee = (taskAssignee: string | null | undefined): boolean => {
-      if (assigneeFilter === 'all' || !assigneeFilter) return true;
-      if (assigneeFilter === 'unassigned') return !taskAssignee;
-      // Support multi-select: comma-separated assignee usernames
-      const selectedAssignees = assigneeFilter.split(',').filter(Boolean);
-      if (selectedAssignees.length === 0) return true;
-      return taskAssignee ? selectedAssignees.includes(taskAssignee) : false;
+    const matchesAgentFilter = (taskAssignee: string | null | undefined): boolean => {
+      if (selectedAgents.length === 0) return true;
+      return taskAssignee ? selectedAgents.includes(taskAssignee) : false;
     };
 
     tasks.forEach((task) => {
@@ -416,7 +428,7 @@ export function ProjectTasks() {
         return;
       }
 
-      if (!matchesAssignee(task.assignee)) {
+      if (!matchesAgentFilter(task.assignee)) {
         return;
       }
 
@@ -478,7 +490,7 @@ export function ProjectTasks() {
     sharedTasksById,
     showSharedTasks,
     userId,
-    assigneeFilter,
+    selectedAgents,
   ]);
 
   const visibleTasksByStatus = useMemo(() => {
@@ -858,14 +870,14 @@ export function ProjectTasks() {
   };
 
   // Agent avatar filter component for visual team roster filtering
-  const agentAvatarFilter = (
+  const agentAvatarFilter = projectId ? (
     <AgentAvatarFilter
-      assigneeFilter={assigneeFilter}
-      onFilterChange={handleAssigneeFilterChange}
       projectId={projectId}
-      tasks={tasks}
+      selectedAgents={selectedAgents}
+      onSelectionChange={handleAgentSelectionChange}
+      taskCounts={taskCountsByAssignee}
     />
-  );
+  ) : null;
 
   const kanbanContent =
     tasks.length === 0 && !hasSharedTasks ? (
