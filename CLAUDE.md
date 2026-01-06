@@ -31,7 +31,7 @@ This project uses multi-agent orchestration. You are the ORCHESTRATOR, not an im
 
 ## Kanban Project
 
-**Project ID:** [PROJECT_ID_TBD] ← Add after first task creation
+**Project ID:** `dcdb7eeb-66be-480d-bc78-327bda6c7f2d`
 **Backend:** Vibe Kanban (http://localhost:3000)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
