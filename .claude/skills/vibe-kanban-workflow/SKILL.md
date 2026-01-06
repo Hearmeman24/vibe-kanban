@@ -227,7 +227,7 @@ These hooks enforce discipline and prevent workflow violations.
 
 ## Notes
 
-- **Kanban Project ID:** Update `[PROJECT_ID]` once you create your first task and note the ID
+- **Kanban Project ID:** `dcdb7eeb-66be-480d-bc78-327bda6c7f2d` (already configured)
 - **Repository:** Update CLAUDE.md with actual GitHub repo details after first PR
 - **MCP Tools:** All Vibe Kanban and GitHub tools available for orchestration
 - **Hooks:** Active in `.claude/settings.json` - they enforce this workflow automatically
