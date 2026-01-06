@@ -78,10 +78,27 @@ const computeItemKey: VirtuosoMessageListProps<
 >['computeItemKey'] = ({ data }) => `l-${data.patchKey}`;
 
 const VirtualizedList = ({ attempt, task }: VirtualizedListProps) => {
+  const { t } = useTranslation('tasks');
   const [channelData, setChannelData] =
     useState<DataWithScrollModifier<PatchTypeWithKey> | null>(null);
   const [loading, setLoading] = useState(true);
   const { setEntries, reset } = useEntries();
+
+  // Check if this is an ORCHESTRATOR_MANAGED workspace (no container_ref)
+  const isOrchestratorManaged = attempt.container_ref === null;
+
+  // Parse agent metadata from task if available
+  const agentNames = useMemo(() => {
+    if (!task?.agent_metadata) return [];
+    try {
+      const metadata: AgentMetadataEntry[] = JSON.parse(task.agent_metadata);
+      // Get unique agent names
+      const uniqueNames = [...new Set(metadata.map((entry) => entry.agent_name))];
+      return uniqueNames;
+    } catch {
+      return [];
+    }
+  }, [task?.agent_metadata]);
 
   useEffect(() => {
     setLoading(true);
