@@ -46,7 +46,7 @@ export function TaskCommentsSection({
   const { t } = useTranslation('tasks');
   const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const {
     data: comments = [],
