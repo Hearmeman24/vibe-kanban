@@ -100,6 +100,26 @@ const AvatarUploadDialogImpl = NiceModal.create<AvatarUploadDialogProps>(
       loadModels();
     }, []);
 
+    // Helper to update the preview image
+    const updatePreview = useCallback(
+      (img: HTMLImageElement, region: CropRegion) => {
+        try {
+          const croppedCanvas = cropImage(img, region);
+          const compressed = compressImage(
+            croppedCanvas,
+            targetSizeKB,
+            0.5,
+            0.92,
+            maxDimension
+          );
+          setPreviewDataUrl(compressed.dataUrl);
+        } catch (err) {
+          console.error('Failed to update preview:', err);
+        }
+      },
+      [targetSizeKB, maxDimension]
+    );
+
     // Update crop region when padding changes
     useEffect(() => {
       if (sourceImage && faces.length > 0) {
@@ -119,9 +139,9 @@ const AvatarUploadDialogImpl = NiceModal.create<AvatarUploadDialogProps>(
     // Update preview when crop region changes
     useEffect(() => {
       if (sourceImage && cropRegion) {
-        updatePreview();
+        updatePreview(sourceImage, cropRegion);
       }
-    }, [sourceImage, cropRegion]);
+    }, [sourceImage, cropRegion, updatePreview]);
 
     // Draw overlay on canvas when faces or crop region changes
     useEffect(() => {
@@ -167,24 +187,6 @@ const AvatarUploadDialogImpl = NiceModal.create<AvatarUploadDialogProps>(
         }
       }
     }, [sourceImage, faces, cropRegion]);
-
-    const updatePreview = useCallback(() => {
-      if (!sourceImage || !cropRegion) return;
-
-      try {
-        const croppedCanvas = cropImage(sourceImage, cropRegion);
-        const compressed = compressImage(
-          croppedCanvas,
-          targetSizeKB,
-          0.5,
-          0.92,
-          maxDimension
-        );
-        setPreviewDataUrl(compressed.dataUrl);
-      } catch (err) {
-        console.error('Failed to update preview:', err);
-      }
-    }, [sourceImage, cropRegion, targetSizeKB, maxDimension]);
 
     const handleFileSelect = useCallback(
       async (file: File) => {
