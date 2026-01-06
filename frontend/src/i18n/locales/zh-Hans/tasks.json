@@ -1,5 +1,10 @@
 {
   "loading": "加载任务中...",
+  "orchestrator": {
+    "managedBy": "任务管理者: {{agents}}",
+    "noAgent": "由编排器管理的任务",
+    "description": "此工作区由编排器外部管理。编排器管理的任务不提供对话历史记录。"
+  },
   "empty": {
     "noTasks": "未找到此项目的任务。",
     "createFirst": "创建第一个任务",
