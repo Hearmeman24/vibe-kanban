@@ -387,6 +387,77 @@ fn extract_changed_paths(
         .collect()
 }
 
+/// Create a diff stream for branch-only workspaces (ORCHESTRATOR_MANAGED mode).
+/// This returns only committed changes between base_branch and workspace_branch,
+/// excluding untracked files and uncommitted working directory changes.
+///
+/// Uses `git diff base_branch...workspace_branch` (three-dot diff) semantics
+/// which compares only the commits, not the working directory state.
+pub async fn create_branch_only(
+    git_service: GitService,
+    repo_path: PathBuf,
+    branch_name: String,
+    base_branch: String,
+    stats_only: bool,
+    path_prefix: Option<String>,
+) -> Result<DiffStreamHandle, DiffStreamError> {
+    let (tx, rx) = mpsc::channel::<Result<LogMsg, io::Error>>(DIFF_STREAM_CHANNEL_CAPACITY);
+
+    let cumulative = Arc::new(AtomicUsize::new(0));
+
+    // Spawn a task to fetch the committed diffs (no file watcher needed for branch-only)
+    let tx_clone = tx.clone();
+    let watcher_task = tokio::spawn(async move {
+        // Fetch committed diffs using DiffTarget::Branch (tree-to-tree comparison)
+        let git_for_diff = git_service.clone();
+        let repo_path_clone = repo_path.clone();
+        let branch_name_clone = branch_name.clone();
+        let base_branch_clone = base_branch.clone();
+
+        let diffs_result = tokio::task::spawn_blocking(move || {
+            git_for_diff.get_diffs(
+                DiffTarget::Branch {
+                    repo_path: &repo_path_clone,
+                    branch_name: &branch_name_clone,
+                    base_branch: &base_branch_clone,
+                },
+                None,
+            )
+        })
+        .await;
+
+        let diffs_raw = match diffs_result {
+            Ok(Ok(diffs)) => diffs,
+            Ok(Err(e)) => {
+                tracing::error!("Failed to get branch diffs: {e}");
+                send_error(&tx_clone, e.to_string()).await;
+                return;
+            }
+            Err(join_err) => {
+                tracing::error!("Diff fetch task join error: {join_err}");
+                send_error(&tx_clone, format!("Diff fetch failed: {join_err}")).await;
+                return;
+            }
+        };
+
+        let mut diffs = Vec::with_capacity(diffs_raw.len());
+        for mut diff in diffs_raw {
+            apply_stream_omit_policy(&mut diff, &cumulative, stats_only);
+            diffs.push(diff);
+        }
+
+        // Send all diffs as initial state (no live updates for branch-only mode)
+        let _ = send_initial_diffs(&tx_clone, diffs, path_prefix.as_deref()).await;
+    });
+
+    drop(tx);
+
+    Ok(DiffStreamHandle::new(
+        ReceiverStream::new(rx).boxed(),
+        Some(watcher_task),
+    ))
+}
+
 #[allow(clippy::too_many_arguments)]
 fn process_file_changes(
     git_service: &GitService,
