@@ -273,7 +273,7 @@ pub struct StartWorkspaceSessionRequest {
     #[schemars(description = "The ID of the task to start")]
     pub task_id: Uuid,
     #[schemars(
-        description = "The coding agent executor to run ('CLAUDE_CODE', 'CODEX', 'GEMINI', 'CURSOR_AGENT', 'OPENCODE')"
+        description = "The executor type. Only 'ORCHESTRATOR_MANAGED' is supported - orchestrator dispatches sub-agents that manage their own processes."
     )]
     pub executor: String,
     #[schemars(description = "Optional executor variant, if needed")]
@@ -282,7 +282,7 @@ pub struct StartWorkspaceSessionRequest {
     pub repos: Vec<McpWorkspaceRepoInput>,
     #[schemars(description = "Optional name of the agent starting the session (e.g., 'Ferris', 'Miley'). When provided, metadata is logged to track agent activity.")]
     pub agent_name: Option<String>,
-    #[schemars(description = "Workspace mode: 'worktree' (default) creates full worktree/container, 'branch' creates only git branch and database records")]
+    #[schemars(description = "Workspace mode: only 'branch' mode is supported (creates git branch and database records without worktree/container)")]
     pub mode: Option<String>,
 }
 
@@ -1156,7 +1156,7 @@ impl TaskServer {
     }
 
     #[tool(
-        description = "Start working on a task by creating and launching a new workspace session. Use mode='branch' to create only the git branch without worktree (lighter weight for agents that manage their own workspace)."
+        description = "Start working on a task by creating a workspace session with branch-only mode. Only ORCHESTRATOR_MANAGED executor is supported - the orchestrator dispatches sub-agents that manage their own processes."
     )]
     async fn start_workspace_session(
         &self,
@@ -1176,15 +1176,6 @@ impl TaskServer {
             );
         }
 
-        // Validate and normalize mode
-        let mode_str = mode.as_deref().unwrap_or("worktree").trim().to_lowercase();
-        if mode_str != "worktree" && mode_str != "branch" {
-            return Self::err(
-                format!("Invalid mode '{}'. Valid values: 'worktree', 'branch'", mode_str),
-                None::<String>,
-            );
-        }
-
         let executor_trimmed = executor.trim();
         if executor_trimmed.is_empty() {
             return Self::err("Executor must not be empty.".to_string(), None::<String>);
@@ -1192,76 +1183,103 @@ impl TaskServer {
 
         let normalized_executor = executor_trimmed.replace('-', "_").to_ascii_uppercase();
 
-        // Handle ORCHESTRATOR_MANAGED as a special case
-        let is_orchestrator_managed = normalized_executor == "ORCHESTRATOR_MANAGED";
-
-        // For ORCHESTRATOR_MANAGED, we force branch mode (no worktree/container)
-        let mode_str = if is_orchestrator_managed {
-            // Validate that mode is either not specified or explicitly "branch"
-            if let Some(ref m) = mode {
-                let m_lower = m.trim().to_lowercase();
-                if m_lower != "branch" {
-                    return Self::err(
-                        "ORCHESTRATOR_MANAGED executor requires mode='branch'. Worktree mode is not supported.".to_string(),
-                        None::<String>,
-                    );
-                }
-            }
-            "branch".to_string()
-        } else {
-            mode.as_deref().unwrap_or("worktree").trim().to_lowercase()
-        };
-
-        if mode_str != "worktree" && mode_str != "branch" {
+        // ONLY ORCHESTRATOR_MANAGED is supported - reject all other executor types
+        if normalized_executor != "ORCHESTRATOR_MANAGED" {
             return Self::err(
-                format!("Invalid mode '{}'. Valid values: 'worktree', 'branch'", mode_str),
+                format!(
+                    "Invalid executor '{}'. Only 'ORCHESTRATOR_MANAGED' is supported. \
+                    ORCHESTRATOR_MANAGED is used when the orchestrator dispatches sub-agents \
+                    that manage their own processes.",
+                    executor_trimmed
+                ),
                 None::<String>,
             );
         }
 
-        // For ORCHESTRATOR_MANAGED, we don't parse it as BaseCodingAgent since it won't spawn a process.
-        // Instead, we use a placeholder executor for DB records.
-        let (executor_profile_id, executor_for_response) = if is_orchestrator_managed {
-            // Use CLAUDE_CODE as placeholder for DB records (process won't be spawned due to branch mode)
-            let placeholder_executor = BaseCodingAgent::ClaudeCode;
-            (
-                ExecutorProfileId {
-                    executor: placeholder_executor,
-                    variant: variant.and_then(|v| {
-                        let trimmed = v.trim();
-                        if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
-                    }),
-                },
-                "ORCHESTRATOR_MANAGED".to_string(),
-            )
-        } else {
-            let base_executor = match BaseCodingAgent::from_str(&normalized_executor) {
-                Ok(exec) => exec,
-                Err(_) => {
-                    return Self::err(
-                        format!("Unknown executor '{executor_trimmed}'."),
-                        None::<String>,
-                    );
-                }
-            };
+        // ORCHESTRATOR_MANAGED always uses branch mode (no worktree/container)
+        // Validate that mode is either not specified or explicitly "branch"
+        if let Some(ref m) = mode {
+            let m_lower = m.trim().to_lowercase();
+            if m_lower != "branch" {
+                return Self::err(
+                    format!(
+                        "Invalid mode '{}'. ORCHESTRATOR_MANAGED only supports mode='branch'. \
+                        Worktree mode is not available.",
+                        m
+                    ),
+                    None::<String>,
+                );
+            }
+        }
+        let mode_str = "branch".to_string();
 
-            let variant = variant.and_then(|v| {
+        // For ORCHESTRATOR_MANAGED, we use CLAUDE_CODE as placeholder for DB records
+        // (no process is spawned due to branch mode)
+        let placeholder_executor = BaseCodingAgent::ClaudeCode;
+        let executor_profile_id = ExecutorProfileId {
+            executor: placeholder_executor,
+            variant: variant.and_then(|v| {
                 let trimmed = v.trim();
-                if trimmed.is_empty() {
-                    None
-                } else {
-                    Some(trimmed.to_string())
-                }
-            });
-
-            (
-                ExecutorProfileId {
-                    executor: base_executor,
-                    variant,
-                },
-                normalized_executor,
-            )
+                if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+            }),
         };
+        let executor_for_response = "ORCHESTRATOR_MANAGED".to_string();
+
+        // NOTE: The following code for other executor types is commented out but preserved
+        // in case we need to re-enable support for other executors in the future.
+        //
+        // ```rust
+        // let is_orchestrator_managed = normalized_executor == "ORCHESTRATOR_MANAGED";
+        // let mode_str = if is_orchestrator_managed {
+        //     if let Some(ref m) = mode {
+        //         let m_lower = m.trim().to_lowercase();
+        //         if m_lower != "branch" {
+        //             return Self::err(
+        //                 "ORCHESTRATOR_MANAGED executor requires mode='branch'.".to_string(),
+        //                 None::<String>,
+        //             );
+        //         }
+        //     }
+        //     "branch".to_string()
+        // } else {
+        //     mode.as_deref().unwrap_or("worktree").trim().to_lowercase()
+        // };
+        //
+        // let (executor_profile_id, executor_for_response) = if is_orchestrator_managed {
+        //     let placeholder_executor = BaseCodingAgent::ClaudeCode;
+        //     (
+        //         ExecutorProfileId {
+        //             executor: placeholder_executor,
+        //             variant: variant.and_then(|v| {
+        //                 let trimmed = v.trim();
+        //                 if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+        //             }),
+        //         },
+        //         "ORCHESTRATOR_MANAGED".to_string(),
+        //     )
+        // } else {
+        //     let base_executor = match BaseCodingAgent::from_str(&normalized_executor) {
+        //         Ok(exec) => exec,
+        //         Err(_) => {
+        //             return Self::err(
+        //                 format!("Unknown executor '{executor_trimmed}'."),
+        //                 None::<String>,
+        //             );
+        //         }
+        //     };
+        //     let variant = variant.and_then(|v| {
+        //         let trimmed = v.trim();
+        //         if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+        //     });
+        //     (
+        //         ExecutorProfileId {
+        //             executor: base_executor,
+        //             variant,
+        //         },
+        //         normalized_executor,
+        //     )
+        // };
+        // ```
 
         // Clone repos for response building later
         let repos_input: Vec<_> = repos.iter().map(|r| (r.repo_id, r.base_branch.clone())).collect();
@@ -1289,12 +1307,8 @@ impl TaskServer {
             }
         }
 
-        // For ORCHESTRATOR_MANAGED, pass the original executor name
-        let executor_name_override = if is_orchestrator_managed {
-            Some("ORCHESTRATOR_MANAGED".to_string())
-        } else {
-            None
-        };
+        // ORCHESTRATOR_MANAGED always passes the executor name override
+        let executor_name_override = Some("ORCHESTRATOR_MANAGED".to_string());
 
         let payload = serde_json::json!({
             "task_id": task_id,
@@ -1330,37 +1344,17 @@ impl TaskServer {
         }
 
         // Build repo info for response
-        // For branch mode, working_directory is the project root (repo path)
-        // For worktree mode, working_directory is the container_ref + repo_name
+        // For branch mode (only mode supported), working_directory is the project root (repo path)
         let mut repo_infos = Vec::new();
         for (repo_id, base_branch) in repos_input {
             // Get repo path from the repos API
             let repo_url = self.url(&format!("/api/repos/{}", repo_id));
-            let working_directory = if mode_str == "branch" {
-                // For branch mode, try to get the repo path
-                match self.send_json::<serde_json::Value>(self.client.get(&repo_url)).await {
-                    Ok(repo_data) => repo_data.get("path")
-                        .and_then(|p| p.as_str())
-                        .unwrap_or("")
-                        .to_string(),
-                    Err(_) => String::new(),
-                }
-            } else {
-                // For worktree mode, use container_ref + repo name
-                match workspace.container_ref.as_ref() {
-                    Some(container_ref) => {
-                        match self.send_json::<serde_json::Value>(self.client.get(&repo_url)).await {
-                            Ok(repo_data) => {
-                                let repo_name = repo_data.get("name")
-                                    .and_then(|n| n.as_str())
-                                    .unwrap_or("");
-                                format!("{}/{}", container_ref, repo_name)
-                            }
-                            Err(_) => container_ref.clone(),
-                        }
-                    }
-                    None => String::new(),
-                }
+            let working_directory = match self.send_json::<serde_json::Value>(self.client.get(&repo_url)).await {
+                Ok(repo_data) => repo_data.get("path")
+                    .and_then(|p| p.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                Err(_) => String::new(),
             };
 
             repo_infos.push(WorkspaceRepoInfo {
