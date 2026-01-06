@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useOrganizationMembers } from '@/hooks/useOrganizationMembers';
+import { useProjectRemoteMembers } from '@/hooks/useProjectRemoteMembers';
 import { UserAvatar } from '@/components/tasks/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,8 +19,8 @@ interface AgentAvatarFilterProps {
   assigneeFilter: string;
   /** Handler to update filter value */
   onFilterChange: (value: string) => void;
-  /** Organization ID to fetch members from */
-  organizationId?: string;
+  /** Project ID to fetch members from */
+  projectId?: string;
   /** Tasks to calculate counts from */
   tasks: TaskWithAttemptStatus[];
 }
