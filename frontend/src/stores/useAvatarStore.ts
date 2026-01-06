@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { create, StateCreator } from 'zustand';
+import { persist, PersistOptions } from 'zustand/middleware';
 
 const STORAGE_KEY = 'vibe-kanban:agent-avatars';
 
@@ -17,12 +17,15 @@ interface AvatarState {
   clearAvatars: () => void;
 }
 
+// Define the persisted state (subset of full state)
+type PersistedState = Pick<AvatarState, 'avatars'>;
+
 /**
- * Custom storage wrapper that handles localStorage errors gracefully.
+ * Safe localStorage wrapper that handles errors gracefully.
  * Catches quota exceeded errors and other localStorage issues
  * (e.g., private browsing mode).
  */
-const safeStorage = createJSONStorage<AvatarState>(() => ({
+const safeLocalStorage = {
   getItem: (name: string): string | null => {
     try {
       return localStorage.getItem(name);
@@ -56,48 +59,73 @@ const safeStorage = createJSONStorage<AvatarState>(() => ({
       console.warn('[AvatarStore] Failed to remove from localStorage:', error);
     }
   },
-}));
+};
+
+const avatarStateCreator: StateCreator<AvatarState> = (set) => ({
+  avatars: {},
+
+  setAvatar: (agentName: string, imageDataUrl: string) =>
+    set((state) => ({
+      avatars: { ...state.avatars, [agentName]: imageDataUrl },
+    })),
+
+  removeAvatar: (agentName: string) =>
+    set((state) => {
+      const { [agentName]: _, ...rest } = state.avatars;
+      return { avatars: rest };
+    }),
+
+  clearAvatars: () => set({ avatars: {} }),
+});
+
+const persistOptions: PersistOptions<AvatarState, PersistedState> = {
+  name: STORAGE_KEY,
+  storage: {
+    getItem: (name) => {
+      const str = safeLocalStorage.getItem(name);
+      if (!str) return null;
+      try {
+        return JSON.parse(str);
+      } catch (error) {
+        console.warn(
+          '[AvatarStore] Failed to parse localStorage data:',
+          error
+        );
+        return null;
+      }
+    },
+    setItem: (name, value) => {
+      try {
+        safeLocalStorage.setItem(name, JSON.stringify(value));
+      } catch (error) {
+        console.warn('[AvatarStore] Failed to stringify state:', error);
+      }
+    },
+    removeItem: (name) => {
+      safeLocalStorage.removeItem(name);
+    },
+  },
+  // Only persist the avatars map, not the actions
+  partialize: (state) => ({ avatars: state.avatars }),
+  // Handle invalid data gracefully during rehydration
+  onRehydrateStorage: () => (state, error) => {
+    if (error) {
+      console.warn(
+        '[AvatarStore] Failed to rehydrate from localStorage:',
+        error
+      );
+    }
+    if (state && typeof state.avatars !== 'object') {
+      console.warn(
+        '[AvatarStore] Invalid avatar data in localStorage, resetting.'
+      );
+      state.avatars = {};
+    }
+  },
+};
 
 export const useAvatarStore = create<AvatarState>()(
-  persist(
-    (set) => ({
-      avatars: {},
-
-      setAvatar: (agentName: string, imageDataUrl: string) =>
-        set((state) => ({
-          avatars: { ...state.avatars, [agentName]: imageDataUrl },
-        })),
-
-      removeAvatar: (agentName: string) =>
-        set((state) => {
-          const { [agentName]: _, ...rest } = state.avatars;
-          return { avatars: rest };
-        }),
-
-      clearAvatars: () => set({ avatars: {} }),
-    }),
-    {
-      name: STORAGE_KEY,
-      storage: safeStorage,
-      // Only persist the avatars map, not the actions
-      partialize: (state) => ({ avatars: state.avatars }),
-      // Handle invalid data gracefully during rehydration
-      onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          console.warn(
-            '[AvatarStore] Failed to rehydrate from localStorage:',
-            error
-          );
-        }
-        if (state && typeof state.avatars !== 'object') {
-          console.warn(
-            '[AvatarStore] Invalid avatar data in localStorage, resetting.'
-          );
-          state.avatars = {};
-        }
-      },
-    }
-  )
+  persist(avatarStateCreator, persistOptions)
 );
 
 // Selector hooks for optimized re-renders
