@@ -46,7 +46,10 @@ export function AgentAvatarFilter({
 }: AgentAvatarFilterProps) {
   const { t } = useTranslation(['tasks', 'common']);
   const { data: remoteMembersData } = useProjectRemoteMembers(projectId);
-  const members = remoteMembersData?.members ?? [];
+  const members = useMemo(
+    () => remoteMembersData?.members ?? [],
+    [remoteMembersData?.members]
+  );
 
   // Parse selected assignees from filter string
   const selectedAssignees = useMemo(() => {
