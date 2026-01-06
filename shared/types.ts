@@ -296,11 +296,9 @@ export type BulkUpdateTasksRequest = { task_ids: Array<string>, status: string, 
 
 export type BulkUpdateTasksResponse = { updated_tasks: Array<Task>, count: number, };
 
-<<<<<<< Updated upstream
 export type GetAgentMetadataResponse = { task_id: string, metadata: Array<AgentMetadataEntry>, count: number, };
 
-=======
->>>>>>> Stashed changes
+
 export type CreateAndStartTaskRequest = { task: CreateTask, executor_profile_id: ExecutorProfileId, repos: Array<WorkspaceRepoInput>, };
 
 export type CreateWebhookRequest = { 
