@@ -373,6 +373,44 @@
         "discard": "Discard",
         "confirmSwitch": "You have unsaved changes. Are you sure you want to switch projects? Your changes will be lost."
       }
+    },
+    "agentsConfiguration": {
+      "title": "Agents Configuration",
+      "description": "Manage your agent team profiles and customize avatars",
+      "claude": "Claude (Orchestrator)",
+      "orchestrator": "Orchestrator",
+      "loading": "Loading agents...",
+      "noAgents": "No agents available",
+      "agent": {
+        "name": "Agent",
+        "role": "Role",
+        "avatar": "Avatar",
+        "uploadButton": "Upload Avatar",
+        "uploading": "Uploading..."
+      },
+      "upload": {
+        "title": "Upload Avatar",
+        "dragDrop": "Drag and drop image or click to upload",
+        "formats": "Supported: PNG, JPG, WebP (max 5MB)",
+        "cancel": "Cancel",
+        "upload": "Upload",
+        "uploading": "Uploading...",
+        "success": "Avatar updated successfully",
+        "invalidFile": "Invalid file type. Please upload PNG, JPG, or WebP.",
+        "fileTooLarge": "File is too large. Maximum size is 5MB.",
+        "error": "Failed to upload avatar"
+      },
+      "roles": {
+        "CLAUDE_CODE": "Claude Code Assistant",
+        "AMP": "Amp Agent",
+        "GEMINI": "Google Gemini",
+        "CODEX": "OpenAI Codex",
+        "OPENCODE": "OpenCode",
+        "CURSOR_AGENT": "Cursor Agent",
+        "QWEN_CODE": "Qwen Code",
+        "COPILOT": "GitHub Copilot",
+        "DROID": "Droid Agent"
+      }
     }
   },
   "integrations": {
