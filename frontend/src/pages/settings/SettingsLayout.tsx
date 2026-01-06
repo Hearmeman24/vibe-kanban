@@ -27,6 +27,10 @@ const settingsNavigation = [
     icon: Cpu,
   },
   {
+    path: 'agents-configuration',
+    icon: Users,
+  },
+  {
     path: 'mcp',
     icon: Server,
   },
