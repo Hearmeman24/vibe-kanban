@@ -857,42 +857,14 @@ export function ProjectTasks() {
       : `${truncated}...`;
   };
 
-  // Assignee filter dropdown component
-  const assigneeFilterDropdown = (
-    <div className="flex items-center gap-2 px-4 py-2">
-      <Filter className="h-4 w-4 text-muted-foreground" />
-      <Select value={assigneeFilter} onValueChange={handleAssigneeFilterChange}>
-        <SelectTrigger className="w-[180px] h-8 text-sm">
-          <SelectValue placeholder={t('filter.assignee', { defaultValue: 'Filter by Assignee' })} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">
-            {t('filter.allAssignees', { defaultValue: 'All Assignees' })}
-          </SelectItem>
-          <SelectItem value="unassigned">
-            {t('filter.unassigned', { defaultValue: 'Unassigned' })}
-          </SelectItem>
-          {uniqueAssignees.map((assignee) => (
-            <SelectItem key={assignee} value={assignee}>
-              <div className="flex items-center gap-2">
-                <User className="h-3 w-3" />
-                {assignee}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {assigneeFilter !== 'all' && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2"
-          onClick={() => handleAssigneeFilterChange('all')}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
+  // Agent avatar filter component for visual team roster filtering
+  const agentAvatarFilter = (
+    <AgentAvatarFilter
+      assigneeFilter={assigneeFilter}
+      onFilterChange={handleAssigneeFilterChange}
+      projectId={projectId}
+      tasks={tasks}
+    />
   );
 
   const kanbanContent =
