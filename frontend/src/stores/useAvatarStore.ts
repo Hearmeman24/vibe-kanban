@@ -71,9 +71,9 @@ const avatarStateCreator: StateCreator<AvatarState> = (set) => ({
 
   removeAvatar: (agentName: string) =>
     set((state) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [agentName]: _removed, ...rest } = state.avatars;
-      return { avatars: rest };
+      const newAvatars = { ...state.avatars };
+      delete newAvatars[agentName];
+      return { avatars: newAvatars };
     }),
 
   clearAvatars: () => set({ avatars: {} }),
