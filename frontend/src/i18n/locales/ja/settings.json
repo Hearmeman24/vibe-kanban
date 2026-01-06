@@ -373,6 +373,44 @@
         "discard": "破棄",
         "confirmSwitch": "未保存の変更があります。本当にプロジェクトを切り替えますか？変更は失われます。"
       }
+    },
+    "agentsConfiguration": {
+      "title": "エージェント設定",
+      "description": "エージェントチームのプロフィールを管理し、アバターをカスタマイズします",
+      "claude": "Claude（オーケストレーター）",
+      "orchestrator": "オーケストレーター",
+      "loading": "エージェントを読み込み中...",
+      "noAgents": "利用可能なエージェントがありません",
+      "agent": {
+        "name": "エージェント",
+        "role": "役割",
+        "avatar": "アバター",
+        "uploadButton": "アバターをアップロード",
+        "uploading": "アップロード中..."
+      },
+      "upload": {
+        "title": "アバターをアップロード",
+        "dragDrop": "画像をドラッグ＆ドロップするか、クリックしてアップロード",
+        "formats": "対応形式: PNG, JPG, WebP (最大5MB)",
+        "cancel": "キャンセル",
+        "upload": "アップロード",
+        "uploading": "アップロード中...",
+        "success": "アバターが正常に更新されました",
+        "invalidFile": "無効なファイル形式です。PNG、JPG、またはWebPをアップロードしてください。",
+        "fileTooLarge": "ファイルが大きすぎます。最大サイズは5MBです。",
+        "error": "アバターのアップロードに失敗しました"
+      },
+      "roles": {
+        "CLAUDE_CODE": "Claude Codeアシスタント",
+        "AMP": "Ampエージェント",
+        "GEMINI": "Google Gemini",
+        "CODEX": "OpenAI Codex",
+        "OPENCODE": "OpenCode",
+        "CURSOR_AGENT": "Cursorエージェント",
+        "QWEN_CODE": "Qwen Code",
+        "COPILOT": "GitHub Copilot",
+        "DROID": "Droidエージェント"
+      }
     }
   },
   "integrations": {
