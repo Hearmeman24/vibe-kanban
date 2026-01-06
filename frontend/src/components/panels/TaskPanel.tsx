@@ -105,7 +105,8 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
     <>
       <NewCardContent>
         <div className="p-6 flex flex-col h-full max-h-[calc(100vh-8rem)]">
-          <div className="space-y-3 overflow-y-auto flex-shrink min-h-0">
+          {/* Header section - fixed at top, never shrinks */}
+          <div className="space-y-3 flex-shrink-0">
             <WYSIWYGEditor value={titleContent} disabled />
             {task.assignee && (
               <div className="flex items-center gap-2">
@@ -120,7 +121,8 @@ const TaskPanel = ({ task }: TaskPanelProps) => {
             )}
           </div>
 
-          <div className="mt-6 flex-shrink-0 space-y-4">
+          {/* Scrollable content section - takes remaining space */}
+          <div className="mt-6 flex-1 min-h-0 overflow-y-auto space-y-4">
             {task.parent_workspace_id && (
               <DataTable
                 data={parentAttempt ? [parentAttempt] : []}
