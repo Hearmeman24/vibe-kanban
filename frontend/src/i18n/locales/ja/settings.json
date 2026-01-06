@@ -12,7 +12,9 @@
         "mcp": "MCPサーバー",
         "mcpDesc": "モデルコンテキストプロトコルサーバー",
         "organizations": "Organization Settings",
-        "organizationsDesc": "Manage organization members and permissions"
+        "organizationsDesc": "Manage organization members and permissions",
+        "agents-configuration": "エージェント設定",
+        "agents-configurationDesc": "エージェントプロフィールとアバターを管理"
       }
     },
     "general": {
