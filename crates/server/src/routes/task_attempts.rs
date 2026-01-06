@@ -873,6 +873,7 @@ pub async fn get_task_attempt_branch_status(
                 is_rebase_in_progress,
                 conflict_op,
                 conflicted_files,
+                branch_deleted,
             },
         });
     }
