@@ -720,6 +720,8 @@ pub struct BranchStatus {
     pub conflict_op: Option<ConflictOp>,
     /// List of files currently in conflicted (unmerged) state
     pub conflicted_files: Vec<String>,
+    /// True if the workspace branch has been deleted from the repository
+    pub branch_deleted: bool,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
