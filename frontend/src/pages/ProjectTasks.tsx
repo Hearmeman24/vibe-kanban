@@ -882,7 +882,7 @@ export function ProjectTasks() {
       </div>
     ) : !hasVisibleLocalTasks && !hasVisibleSharedTasks ? (
       <div className="max-w-7xl mx-auto mt-8">
-        {assigneeFilterDropdown}
+        {agentAvatarFilter}
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground">
@@ -893,7 +893,7 @@ export function ProjectTasks() {
       </div>
     ) : (
       <div className="w-full h-full flex flex-col overflow-hidden">
-        {assigneeFilterDropdown}
+        {agentAvatarFilter}
         <div className="flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain">
           <TaskKanbanBoard
             columns={kanbanColumns}
