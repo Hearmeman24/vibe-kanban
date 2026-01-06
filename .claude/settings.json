@@ -2,11 +2,21 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/avivkaplan/src/vibe-kanban/.claude/hooks/block-orchestrator-tools.sh $TOOL_NAME"
+            "command": ".claude/hooks/block-orchestrator-tools.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-task-dispatch.sh",
+            "timeout": 10
           }
         ]
       }
@@ -16,7 +26,30 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/Users/avivkaplan/src/vibe-kanban/.claude/hooks/orchestrator-reminder.sh"
+            "command": ".claude/hooks/orchestrator-reminder.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-stop-conditions.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-supervisor-completion.sh",
+            "timeout": 15
           }
         ]
       }
