@@ -1347,3 +1347,53 @@ export const queueApi = {
     return handleApiResponse<QueueStatus>(response);
   },
 };
+
+/**
+ * Metadata for a Claude agent defined in `.claude/agents/*.md` files.
+ * Parsed from YAML frontmatter in the markdown files.
+ */
+export interface AgentMetadata {
+  /** Agent name from frontmatter (e.g., "frontend-supervisor") */
+  name: string;
+  /** Agent description/role from frontmatter */
+  description: string;
+  /** Array of available tools (e.g., ["Read", "Write", "Edit"]) */
+  tools?: string[];
+  /** Model ID (e.g., "opus", "sonnet") */
+  model?: string;
+  /** File path for reference (relative to project root) */
+  path: string;
+  /** First letter of agent name for avatar fallback */
+  avatarLetter: string;
+}
+
+/**
+ * Response type for agent list endpoints
+ */
+export interface AgentListResponse {
+  agents: AgentMetadata[];
+}
+
+// Agents Discovery API
+export const agentsApi = {
+  /**
+   * Get agents defined in a project's `.claude/agents` folder.
+   * Returns empty array if folder doesn't exist.
+   */
+  getProjectAgents: async (projectId: string): Promise<AgentMetadata[]> => {
+    const response = await makeRequest(`/api/agents/project/${projectId}`);
+    const result = await handleApiResponse<AgentListResponse>(response);
+    return result.agents;
+  },
+
+  /**
+   * Get agents defined in the root `.claude/agents` folder.
+   * These are global agents available across all projects.
+   * Returns empty array if folder doesn't exist.
+   */
+  getGlobalAgents: async (): Promise<AgentMetadata[]> => {
+    const response = await makeRequest('/api/agents/global');
+    const result = await handleApiResponse<AgentListResponse>(response);
+    return result.agents;
+  },
+};
