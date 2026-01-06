@@ -12,6 +12,7 @@ import { usePreviousPath } from '@/hooks/usePreviousPath';
 
 import {
   AgentSettings,
+  AgentsConfigurationPage,
   GeneralSettings,
   McpSettings,
   OrganizationSettings,
