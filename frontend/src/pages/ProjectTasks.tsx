@@ -70,6 +70,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { AttemptHeaderActions } from '@/components/panels/AttemptHeaderActions';
 import { TaskPanelHeaderActions } from '@/components/panels/TaskPanelHeaderActions';
+import { AgentAvatarFilter } from '@/components/tasks/AgentAvatarFilter';
 
 import type { TaskWithAttemptStatus, TaskStatus } from 'shared/types';
 
