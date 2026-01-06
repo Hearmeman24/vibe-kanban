@@ -52,6 +52,9 @@ function GitOperations({
 }: GitOperationsProps) {
   const { t } = useTranslation('tasks');
 
+  // Detect orchestrator-managed mode (no container_ref means branch-only mode)
+  const isOrchestratorMode = selectedAttempt.container_ref === null;
+
   const { repos, selectedRepoId, setSelectedRepoId } = useAttemptRepo(
     selectedAttempt.id
   );
