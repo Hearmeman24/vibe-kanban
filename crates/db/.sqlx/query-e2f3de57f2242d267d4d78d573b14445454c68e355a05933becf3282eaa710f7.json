@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO webhooks (id, project_id, url, secret, events)\n               VALUES ($1, $2, $3, $4, $5)\n               RETURNING id as \"id!: Uuid\", project_id as \"project_id!: Uuid\", url, secret, events, is_active as \"is_active!: bool\", created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "project_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "url",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "secret",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "events",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_active!: bool",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e2f3de57f2242d267d4d78d573b14445454c68e355a05933becf3282eaa710f7"
+}

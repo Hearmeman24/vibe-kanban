@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO webhook_deliveries (id, webhook_id, event_type, payload)\n               VALUES ($1, $2, $3, $4)\n               RETURNING id as \"id!: Uuid\", webhook_id as \"webhook_id!: Uuid\", event_type, payload, status as \"status!: DeliveryStatus\", attempts as \"attempts!: i64\", last_error, next_retry_at as \"next_retry_at: DateTime<Utc>\", created_at as \"created_at!: DateTime<Utc>\", delivered_at as \"delivered_at: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "webhook_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "event_type",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "payload",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "status!: DeliveryStatus",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "attempts!: i64",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "last_error",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "next_retry_at: DateTime<Utc>",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "delivered_at: DateTime<Utc>",
+        "ordinal": 9,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "90051f07b3bc0763aea011558a6b663bfbab938e489d755aec347c435727cbb6"
+}

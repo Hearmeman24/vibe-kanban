@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!: Uuid\", task_id as \"task_id!: Uuid\", field_changed, old_value, new_value, changed_by, changed_at as \"changed_at!: DateTime<Utc>\"\n               FROM task_history\n               WHERE task_id = $1\n               ORDER BY changed_at ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "task_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "field_changed",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "old_value",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "new_value",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "changed_by",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "changed_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "ff1bbc7593e1620bffc4cdbaf788a4948518902405f3b6831fda9ca707050975"
+}

@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO task_history (id, task_id, field_changed, old_value, new_value, changed_by)\n               VALUES ($1, $2, $3, $4, $5, $6)\n               RETURNING id as \"id!: Uuid\", task_id as \"task_id!: Uuid\", field_changed, old_value, new_value, changed_by, changed_at as \"changed_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "task_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "field_changed",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "old_value",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "new_value",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "changed_by",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "changed_at!: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "c52a1b2cb14890ed4dd9743c4c8aa61b7c2451154d84879d8011e37c0eb05a0d"
+}

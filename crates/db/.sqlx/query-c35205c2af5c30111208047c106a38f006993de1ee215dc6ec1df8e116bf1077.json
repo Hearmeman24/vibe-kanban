@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM webhook_deliveries\n               WHERE status IN ('success', 'failed')\n                 AND created_at < datetime('now', '-' || $1 || ' days')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "c35205c2af5c30111208047c106a38f006993de1ee215dc6ec1df8e116bf1077"
+}
