@@ -35,7 +35,7 @@ import {
   MAX_FILE_SIZE,
   type FaceDetectionResult,
   type CropRegion,
-} from '@/lib/image-utils';
+} from '@/lib/imageUtils';
 import { cn } from '@/lib/utils';
 
 export interface AvatarUploadDialogProps {
