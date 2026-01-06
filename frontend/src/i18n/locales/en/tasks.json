@@ -1,5 +1,10 @@
 {
   "loading": "Loading tasks...",
+  "orchestrator": {
+    "managedBy": "Task managed by: {{agents}}",
+    "noAgent": "Task managed by orchestrator",
+    "description": "This workspace is managed externally by an orchestrator. Conversation history is not available for orchestrator-managed tasks."
+  },
   "empty": {
     "noTasks": "No tasks found for this project.",
     "createFirst": "Create First Task",
