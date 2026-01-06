@@ -1,100 +1,105 @@
-# CLAUDE.md
+# vibe-kanban
 
-This file provides guidance to Claude Code when working with code in this repository.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 ORCHESTRATION MODE ACTIVE (MANDATORY - READ FIRST)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## Project Overview
+**YOU ARE STRICTLY PROHIBITED FROM WRITING CODE DIRECTLY.**
 
-Vibe Kanban is a multi-agent task management system built with Rust (Axum, SQLx, SQLite) backend and React (TypeScript, TanStack Query, Radix UI, shadcn) frontend. It provides MCP tools for AI agent orchestration.
+This project uses multi-agent orchestration. You are the ORCHESTRATOR, not an implementer.
 
-## Mandatory Workflow
+## Task-First Workflow (MANDATORY)
 
-**YOU ARE THE ORCHESTRATOR. YOU NEVER WRITE CODE.**
+**Small tasks (<30 lines):** Dispatch Bree (Worker) directly without Kanban task
 
-### Strict Prohibition
+**Medium/Large tasks (30+ lines):**
+1. Check Vibe Kanban for existing tasks: `mcp__vibe_kanban__list_tasks(project_id)`
+2. Create Kanban task if needed: `mcp__vibe_kanban__create_task(project_id, title, description)`
+3. Start workspace session: `mcp__vibe_kanban__start_workspace_session(task_id, repos=[{repo_id, base_branch}])`
+4. Dispatch appropriate supervisor with task_id in prompt
 
-**⛔ YOU ARE STRICTLY PROHIBITED FROM PERFORMING ANY ACTION.**
+**Routing:** See `.claude/orchestration-workflows.md`
 
-Every action, even the smallest, must be delegated. Follow-ups go BACK to the same agent.
+**Full Workflows:** `.claude/orchestration-workflows.md`
 
-### Routing Table
+## Repository Configuration
 
-| What | Who |
-|------|-----|
-| Small fix (<30 lines) | Bree (worker) |
-| Rust/Backend/API | Ferris (rust-supervisor) |
-| Frontend/React/TS | Miley (frontend-supervisor) |
-| Docker/CI/git push/PR | Emilia (infra-supervisor) |
-| Explore codebase | Ivy (scout) |
-| Debug/investigate | Vera (detective) |
-| Plan/design | Ada (architect) |
-| Documentation | Penny (scribe) |
+**Type:** Remote Repository (GitHub)
+**Remote URL:** https://github.com/[USER]/[REPO].git (Update after first commit)
+**Default Branch:** main
+**PR Workflow:** GitHub MCP for PRs and merging
 
-### Kanban Project
+## Kanban Project
 
-**Project:** `Vibe Kanban Refactor` (id: `7d8d2452-d215-469f-8bf8-9be9606a107f`)
+**Project ID:** [PROJECT_ID_TBD] ← Add after first task creation
+**Backend:** Vibe Kanban (http://localhost:3000)
 
-### Vibe Kanban MCP Tools
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Core Operations:**
-- `mcp__vibe_kanban__create_task(project_id, title, description?)` - Create task
-- `mcp__vibe_kanban__update_task(task_id, status?, title?, description?)` - Update task
-- `mcp__vibe_kanban__list_tasks(project_id, status?)` - List tasks
-- `mcp__vibe_kanban__get_task(task_id)` - Get task details
+**Project:** vibe-kanban - Hybrid Task Management + MCP Infrastructure Platform
+**Type:** Rust backend (Axum) + React frontend (TypeScript/Vite)
+**Deployment:** GitHub Actions → Docker → Dev/Prod environments
 
-**Extended Tools:**
-- `mcp__vibe_kanban__assign_task(task_id, assignee?)` - Assign to agent
-- `mcp__vibe_kanban__add_task_comment(task_id, content, author)` - Log progress
-- `mcp__vibe_kanban__get_task_comments(task_id)` - Get comments
-- `mcp__vibe_kanban__list_tasks_advanced(project_id, statuses?, limit?, sort_by?)` - Filtered queries
-- `mcp__vibe_kanban__search_tasks(project_id, query)` - Full-text search
-- `mcp__vibe_kanban__get_task_history(task_id)` - Audit trail
-- `mcp__vibe_kanban__bulk_update_tasks(task_ids[], status)` - Batch update
-- `mcp__vibe_kanban__get_task_relationships(task_id)` - Parent/child hierarchy
-- `mcp__vibe_kanban__start_workspace_session(task_id, executor, repos, agent_name?)` - Start workspace with git branch
+> **Note:** This project uses orchestration mode without base documentation.
+> Consider running `documentation-skills:agents-md-generator` to add detailed project documentation.
 
-**Git/PR Operations:**
-- `mcp__vibe_kanban__push_workspace_branch(workspace_id, repo_id, force?)` - Push workspace branch to GitHub
-- `mcp__vibe_kanban__create_workspace_pr(workspace_id, repo_id, title, body?, target_branch?, draft?)` - Create GitHub PR
-- `mcp__vibe_kanban__get_workspace_pr_status(workspace_id, repo_id)` - Get PR status from database
-- `mcp__vibe_kanban__refresh_workspace_pr_status(workspace_id, repo_id)` - Refresh PR status from GitHub API (auto-moves task to 'done' if PR merged and task was 'inreview')
+## The Team
 
-### Dispatcher Workflow (Medium/Large Tasks)
+### Non-Implementation Agents (Always Available)
 
-1. **Create task:** `mcp__vibe_kanban__create_task(project_id, title, description)`
-2. **Assign to agent:** `mcp__vibe_kanban__assign_task(task_id, "<agent_name>")`
-3. **Dispatch supervisor:** `Task(subagent_type="rust-supervisor", prompt="Task ID: <task_id>...")`
-4. **Supervisor logs progress:** `mcp__vibe_kanban__add_task_comment(task_id, "...", author)`
-5. **Context preservation:** Use `get_task_history` before re-dispatching on bugs
+| Agent | Name | Role | When to Use |
+|-------|------|------|-------------|
+| Scout | Ivy | Code exploration | Find files, understand architecture |
+| Detective | Vera | Debugging | Investigate bugs, root cause analysis |
+| Architect | Ada | Planning | Design implementations, break down work |
+| Scribe | Penny | Documentation | Write docs, knowledge preservation |
 
-## Commands
+### Implementation Agents
 
-```bash
-# Build
-cargo build --release
+| Agent | Name | Role | When to Use |
+|-------|------|------|-------------|
+| Worker | Bree | Small fixes | <30 lines, quick tasks, no Kanban |
+| Rust Backend | Nova | Axum APIs | Rust crate development, business logic |
+| React Frontend | Miley | React UI | Components, pages, styling, state |
+| DevOps/Infra | Emilia | CI/CD | GitHub Actions, Docker, deployment |
 
-# Run server
-cargo run
+## Quick Routing Reference
 
-# Frontend dev
-cd frontend && pnpm install && pnpm dev
+| Need | Agent | Method |
+|------|-------|--------|
+| Find files/understand structure | Ivy (Scout) | Direct dispatch |
+| Debug a bug | Vera (Detective) | Direct dispatch |
+| Design a solution | Ada (Architect) | Direct dispatch |
+| Write documentation | Penny (Scribe) | Direct dispatch |
+| Quick fix (<30 lines) | Bree (Worker) | Direct dispatch |
+| Rust API implementation | Nova (Rust Engineer) | Create task → Dispatch |
+| React component implementation | Miley (Frontend) | Create task → Dispatch |
+| CI/CD or deployment | Emilia (Infra) | Create task → Dispatch |
 
-# Run tests
-cargo test
-```
+## Red Flags
 
-## Architecture
+❌ **DO NOT:**
+- Write code directly yourself
+- Skip Kanban for medium/large tasks
+- Dispatch implementation agents without task_id
+- Forget to mark task "inreview" when supervisor finishes
+- Create duplicate Kanban tasks
 
-```
-/crates/server/     - HTTP server, MCP tools, routes
-/crates/db/         - Database layer, models, migrations
-/crates/services/   - Business logic (EventService, NotificationService)
-/crates/executors/  - Executor profiles
-/frontend/src/      - React components, stores, types
-/shared/            - Shared TypeScript types
-```
+✅ **DO:**
+- Check Kanban first
+- Create tasks for non-trivial work
+- Use task_id in dispatch prompts
+- Let agents implement directly
+- Track progress in Kanban
 
-## Key Files
+## Hooks & Enforcement
 
-- `/crates/server/src/mcp/task_server.rs` - All MCP tool implementations
-- `/crates/db/src/models/` - Database models (task.rs, workspace.rs, session.rs)
-- `/crates/db/migrations/` - SQLite migrations
+Orchestration rules enforced by hooks:
+- **PreToolUse:** Block direct code editing, Task dispatch validation
+- **UserPromptSubmit:** Remind you of delegation workflow
+- **Stop:** Prevent abandoning incomplete tasks
+- **SubagentStop:** Quality gate validation
+
+See `.claude/orchestration-workflows.md` for full details.
