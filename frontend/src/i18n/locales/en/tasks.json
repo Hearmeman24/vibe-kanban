@@ -116,7 +116,9 @@
     "collapseAll": "Collapse all diffs",
     "filesChanged_one": "{{count}} file changed",
     "filesChanged_other": "{{count}} files changed",
-    "noChanges": "No changes have been made yet"
+    "noChanges": "No changes have been made yet",
+    "branchOnlyMode": "Branch-only mode",
+    "branchOnlyModeHint": "Showing committed changes only (no live file watching)"
   },
   "taskPanel": {
     "noTaskSelected": "No task selected",

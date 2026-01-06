@@ -7,7 +7,7 @@ import DiffViewSwitch from '@/components/DiffViewSwitch';
 import DiffCard from '@/components/DiffCard';
 import { useDiffSummary } from '@/hooks/useDiffSummary';
 import { NewCardHeader } from '@/components/ui/new-card';
-import { ChevronsUp, ChevronsDown } from 'lucide-react';
+import { ChevronsUp, ChevronsDown, GitBranch } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -226,6 +226,12 @@ function DiffsPanelContent({
       {gitOps && selectedAttempt && (
         <div className="px-3">
           <GitOperations selectedAttempt={selectedAttempt} {...gitOps} />
+        </div>
+      )}
+      {selectedAttempt?.container_ref === null && (
+        <div className="px-3 py-2 flex items-center gap-2 text-sm text-muted-foreground border-b">
+          <GitBranch className="h-3 w-3" />
+          <span>{t('diff.branchOnlyModeHint')}</span>
         </div>
       )}
       <div className="flex-1 overflow-y-auto px-3">
