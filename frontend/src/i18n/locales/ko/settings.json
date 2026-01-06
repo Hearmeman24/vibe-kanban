@@ -373,6 +373,44 @@
         "discard": "취소",
         "confirmSwitch": "저장되지 않은 변경사항이 있습니다. 정말 프로젝트를 전환하시겠습니까? 변경사항이 손실됩니다."
       }
+    },
+    "agentsConfiguration": {
+      "title": "에이전트 구성",
+      "description": "에이전트 팀 프로필을 관리하고 아바타를 사용자 정의하세요",
+      "claude": "Claude (오케스트레이터)",
+      "orchestrator": "오케스트레이터",
+      "loading": "에이전트 로딩 중...",
+      "noAgents": "사용 가능한 에이전트가 없습니다",
+      "agent": {
+        "name": "에이전트",
+        "role": "역할",
+        "avatar": "아바타",
+        "uploadButton": "아바타 업로드",
+        "uploading": "업로드 중..."
+      },
+      "upload": {
+        "title": "아바타 업로드",
+        "dragDrop": "이미지를 드래그 앤 드롭하거나 클릭하여 업로드",
+        "formats": "지원 형식: PNG, JPG, WebP (최대 5MB)",
+        "cancel": "취소",
+        "upload": "업로드",
+        "uploading": "업로드 중...",
+        "success": "아바타가 성공적으로 업데이트되었습니다",
+        "invalidFile": "유효하지 않은 파일 형식입니다. PNG, JPG 또는 WebP를 업로드하세요.",
+        "fileTooLarge": "파일이 너무 큽니다. 최대 크기는 5MB입니다.",
+        "error": "아바타 업로드에 실패했습니다"
+      },
+      "roles": {
+        "CLAUDE_CODE": "Claude Code 어시스턴트",
+        "AMP": "Amp 에이전트",
+        "GEMINI": "Google Gemini",
+        "CODEX": "OpenAI Codex",
+        "OPENCODE": "OpenCode",
+        "CURSOR_AGENT": "Cursor 에이전트",
+        "QWEN_CODE": "Qwen Code",
+        "COPILOT": "GitHub Copilot",
+        "DROID": "Droid 에이전트"
+      }
     }
   },
   "integrations": {
