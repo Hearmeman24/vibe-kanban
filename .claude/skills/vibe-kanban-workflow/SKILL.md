@@ -7,7 +7,7 @@ description: Orchestration workflow for vibe-kanban. Use when routing tasks, che
 
 ## Quick Reference
 
-**Kanban Project ID:** [PROJECT_ID_TBD] ← Add after first task
+**Kanban Project ID:** `dcdb7eeb-66be-480d-bc78-327bda6c7f2d`
 **Main Role:** PURE ORCHESTRATOR (no direct code writing)
 **Enforcement:** Hooks prevent direct code edits and tool misuse
 
