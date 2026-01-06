@@ -1311,6 +1311,24 @@ impl TaskServer {
             Err(e) => return Ok(e),
         };
 
+        // Auto-assign task to agent if agent_name is provided
+        if let Some(ref name) = agent_name {
+            let trimmed_name = name.trim();
+            if !trimmed_name.is_empty() {
+                let assign_payload = UpdateTask {
+                    title: None,
+                    description: None,
+                    status: None,
+                    parent_workspace_id: None,
+                    image_ids: None,
+                    assignee: Some(trimmed_name.to_string()),
+                };
+                let assign_url = self.url(&format!("/api/tasks/{}", task_id));
+                // Fire and forget - don't block on assignment (best effort)
+                let _ = self.send_json::<Task>(self.client.put(&assign_url).json(&assign_payload)).await;
+            }
+        }
+
         // Build repo info for response
         // For branch mode, working_directory is the project root (repo path)
         // For worktree mode, working_directory is the container_ref + repo_name
