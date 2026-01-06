@@ -20,7 +20,7 @@ QUICK ROUTING:
 
 FULL ROUTING: .claude/orchestration-workflows.md
 
-Kanban: [PROJECT_ID_TBD]
+Kanban: dcdb7eeb-66be-480d-bc78-327bda6c7f2d
 Workflow Skill: /vibe-kanban-workflow
 EOF
 exit 0
