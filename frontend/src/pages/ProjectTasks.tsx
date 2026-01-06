@@ -408,9 +408,12 @@ export function ProjectTasks() {
     };
 
     const matchesAssignee = (taskAssignee: string | null | undefined): boolean => {
-      if (assigneeFilter === 'all') return true;
+      if (assigneeFilter === 'all' || !assigneeFilter) return true;
       if (assigneeFilter === 'unassigned') return !taskAssignee;
-      return taskAssignee === assigneeFilter;
+      // Support multi-select: comma-separated assignee usernames
+      const selectedAssignees = assigneeFilter.split(',').filter(Boolean);
+      if (selectedAssignees.length === 0) return true;
+      return taskAssignee ? selectedAssignees.includes(taskAssignee) : false;
     };
 
     tasks.forEach((task) => {
