@@ -373,6 +373,44 @@
         "discard": "放弃",
         "confirmSwitch": "您有未保存的更改。您确定要切换项目吗？您的更改将丢失。"
       }
+    },
+    "agentsConfiguration": {
+      "title": "代理配置",
+      "description": "管理您的代理团队资料并自定义头像",
+      "claude": "Claude（编排器）",
+      "orchestrator": "编排器",
+      "loading": "加载代理中...",
+      "noAgents": "没有可用的代理",
+      "agent": {
+        "name": "代理",
+        "role": "角色",
+        "avatar": "头像",
+        "uploadButton": "上传头像",
+        "uploading": "上传中..."
+      },
+      "upload": {
+        "title": "上传头像",
+        "dragDrop": "拖放图片或点击上传",
+        "formats": "支持格式：PNG、JPG、WebP（最大 5MB）",
+        "cancel": "取消",
+        "upload": "上传",
+        "uploading": "上传中...",
+        "success": "头像更新成功",
+        "invalidFile": "无效的文件类型。请上传 PNG、JPG 或 WebP。",
+        "fileTooLarge": "文件太大。最大大小为 5MB。",
+        "error": "上传头像失败"
+      },
+      "roles": {
+        "CLAUDE_CODE": "Claude Code 助手",
+        "AMP": "Amp 代理",
+        "GEMINI": "Google Gemini",
+        "CODEX": "OpenAI Codex",
+        "OPENCODE": "OpenCode",
+        "CURSOR_AGENT": "Cursor 代理",
+        "QWEN_CODE": "Qwen Code",
+        "COPILOT": "GitHub Copilot",
+        "DROID": "Droid 代理"
+      }
     }
   },
   "integrations": {
