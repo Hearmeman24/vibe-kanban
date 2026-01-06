@@ -32,3 +32,5 @@ export { useOrganizationInvitations } from './useOrganizationInvitations';
 export { useOrganizationMutations } from './useOrganizationMutations';
 export { useVariant } from './useVariant';
 export { useRetryProcess } from './useRetryProcess';
+export { useAgentAvatars, useAgentAvatar } from './useAgentAvatars';
+export type { UseAgentAvatarsReturn } from './useAgentAvatars';
