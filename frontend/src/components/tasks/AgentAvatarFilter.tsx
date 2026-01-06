@@ -41,11 +41,12 @@ interface AssigneeWithCount {
 export function AgentAvatarFilter({
   assigneeFilter,
   onFilterChange,
-  organizationId,
+  projectId,
   tasks,
 }: AgentAvatarFilterProps) {
   const { t } = useTranslation(['tasks', 'common']);
-  const { data: members = [] } = useOrganizationMembers(organizationId);
+  const { data: remoteMembersData } = useProjectRemoteMembers(projectId);
+  const members = remoteMembersData?.members ?? [];
 
   // Parse selected assignees from filter string
   const selectedAssignees = useMemo(() => {
