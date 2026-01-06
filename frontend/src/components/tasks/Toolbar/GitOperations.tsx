@@ -468,26 +468,40 @@ function GitOperations({
         {/* Right: Actions */}
         {selectedRepoStatus && (
           <div className={actionsClasses}>
-            <Button
-              onClick={handleMergeClick}
-              disabled={
-                mergeInfo.hasMergedPR ||
-                mergeInfo.hasOpenPR ||
-                merging ||
-                hasConflictsCalculated ||
-                isAttemptRunning ||
-                ((selectedRepoStatus?.commits_ahead ?? 0) === 0 &&
-                  !pushSuccess &&
-                  !mergeSuccess)
-              }
-              variant="outline"
-              size="xs"
-              className="border-success text-success hover:bg-success gap-1 shrink-0"
-              aria-label={mergeButtonLabel}
-            >
-              <GitBranchIcon className="h-3.5 w-3.5" />
-              <span className="truncate max-w-[10ch]">{mergeButtonLabel}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handleMergeClick}
+                      disabled={
+                        isOrchestratorMode ||
+                        mergeInfo.hasMergedPR ||
+                        mergeInfo.hasOpenPR ||
+                        merging ||
+                        hasConflictsCalculated ||
+                        isAttemptRunning ||
+                        ((selectedRepoStatus?.commits_ahead ?? 0) === 0 &&
+                          !pushSuccess &&
+                          !mergeSuccess)
+                      }
+                      variant="outline"
+                      size="xs"
+                      className="border-success text-success hover:bg-success gap-1 shrink-0"
+                      aria-label={mergeButtonLabel}
+                    >
+                      <GitBranchIcon className="h-3.5 w-3.5" />
+                      <span className="truncate max-w-[10ch]">{mergeButtonLabel}</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {isOrchestratorMode && (
+                  <TooltipContent>
+                    {t('orchestrator.mergeDisabled')}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
 
             <Button
               onClick={handlePRButtonClick}
@@ -512,19 +526,32 @@ function GitOperations({
               <span className="truncate max-w-[10ch]">{prButtonLabel}</span>
             </Button>
 
-            <Button
-              onClick={handleRebaseDialogOpen}
-              disabled={rebasing || isAttemptRunning || hasConflictsCalculated}
-              variant="outline"
-              size="xs"
-              className="border-warning text-warning hover:bg-warning gap-1 shrink-0"
-              aria-label={rebaseButtonLabel}
-            >
-              <RefreshCw
-                className={`h-3.5 w-3.5 ${rebasing ? 'animate-spin' : ''}`}
-              />
-              <span className="truncate max-w-[10ch]">{rebaseButtonLabel}</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handleRebaseDialogOpen}
+                      disabled={isOrchestratorMode || rebasing || isAttemptRunning || hasConflictsCalculated}
+                      variant="outline"
+                      size="xs"
+                      className="border-warning text-warning hover:bg-warning gap-1 shrink-0"
+                      aria-label={rebaseButtonLabel}
+                    >
+                      <RefreshCw
+                        className={`h-3.5 w-3.5 ${rebasing ? 'animate-spin' : ''}`}
+                      />
+                      <span className="truncate max-w-[10ch]">{rebaseButtonLabel}</span>
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {isOrchestratorMode && (
+                  <TooltipContent>
+                    {t('orchestrator.rebaseDisabled')}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </div>
