@@ -1,0 +1,77 @@
+[2m2026-01-06T10:22:31.376797Z[0m [32m INFO[0m [2mexecutors::profile[0m[2m:[0m Loaded user profile overrides from profiles.json
+[2m2026-01-06T10:22:31.398942Z[0m [32m INFO[0m [2mlocal_deployment[0m[2m:[0m Starting orphaned image cleanup...
+[2m2026-01-06T10:22:31.398977Z[0m [32m INFO[0m [2mservices::services::oauth_credentials[0m[2m:[0m OAuth credentials backend: keychain
+[2m2026-01-06T10:22:31.406450Z[0m [32m INFO[0m [2mlocal_deployment[0m[2m:[0m VK_SHARED_API_BASE not set; remote features disabled
+[2m2026-01-06T10:22:31.407389Z[0m [32m INFO[0m [2mlocal_deployment::container[0m[2m:[0m Starting periodic workspace cleanup...
+[2m2026-01-06T10:22:31.408741Z[0m [32m INFO[0m [2mservices::services::pr_monitor[0m[2m:[0m Starting PR monitoring service with interval 60s
+[2m2026-01-06T10:22:31.408869Z[0m [32m INFO[0m [2mservices::services::webhook_worker[0m[2m:[0m Starting webhook worker service [3mpoll_interval_secs[0m[2m=[0m30
+[2m2026-01-06T10:22:31.408897Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Starting file search cache warming...
+[2m2026-01-06T10:22:31.410534Z[0m [32m INFO[0m [2mserver[0m[2m:[0m Server running on http://127.0.0.1:3000
+[2m2026-01-06T10:22:31.410542Z[0m [32m INFO[0m [2mserver[0m[2m:[0m Opening browser...
+[2m2026-01-06T10:22:31.410607Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Warming cache for 3 repositories: ["/Users/avivkaplan/src/comfyui-qwen-image", "/Users/avivkaplan/src/vibe-kanban", "/Users/avivkaplan/src/hearmemanai_lora_training_app_v2"]
+[2m2026-01-06T10:22:31.411578Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Setup file watcher for repo: "/Users/avivkaplan/src/comfyui-qwen-image"
+[2m2026-01-06T10:22:31.411597Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Building cache for repo: "/Users/avivkaplan/src/comfyui-qwen-image"
+[2m2026-01-06T10:22:31.412194Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Setup file watcher for repo: "/Users/avivkaplan/src/vibe-kanban"
+[2m2026-01-06T10:22:31.412654Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Setup file watcher for repo: "/Users/avivkaplan/src/hearmemanai_lora_training_app_v2"
+[2m2026-01-06T10:22:31.412781Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m File search cache warming completed
+[2m2026-01-06T10:22:31.762987Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Successfully cached repo: "/Users/avivkaplan/src/comfyui-qwen-image"
+[2m2026-01-06T10:22:31.763012Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Building cache for repo: "/Users/avivkaplan/src/vibe-kanban"
+[2m2026-01-06T10:22:31.969131Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Successfully cached repo: "/Users/avivkaplan/src/vibe-kanban"
+[2m2026-01-06T10:22:31.969156Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Building cache for repo: "/Users/avivkaplan/src/hearmemanai_lora_training_app_v2"
+[2m2026-01-06T10:22:32.320999Z[0m [32m INFO[0m [2mservices::services::file_search_cache[0m[2m:[0m Successfully cached repo: "/Users/avivkaplan/src/hearmemanai_lora_training_app_v2"
+[2m2026-01-06T10:23:34.757393Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:34.770014Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:36.774089Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:36.784660Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:38.785741Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:38.799710Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:40.797991Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:40.810198Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:42.802635Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:42.814907Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:44.809344Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:44.822357Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:47.445728Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:23:47.458848Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/8f8d-handle-deleted-b
+[2m2026-01-06T10:24:04.084771Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:04.097395Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:06.091009Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:06.104399Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:08.096285Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:08.108559Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:10.102265Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:10.113651Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:12.109061Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:12.129996Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:14.117325Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:14.142412Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:16.124241Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:16.149993Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:18.134970Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:18.159127Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:20.148209Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:20.168000Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:22.158453Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:22.174549Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:24.168230Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:24.180268Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:26.178070Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:26.190958Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:28.188615Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:28.201360Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:30.194860Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:30.206132Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:32.201071Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:24:32.215407Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/5692-test-orchestrato
+[2m2026-01-06T10:25:04.574385Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:09.011618Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:09.024094Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:11.019556Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:11.033972Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:13.026947Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:13.039133Z[0m [33m WARN[0m [2mlocal_deployment::container[0m[2m:[0m Skipping diff stream for repo vibe-kanban: failed to get base commit: Branch not found: vk/bd54-phase-2-smart-me
+[2m2026-01-06T10:25:30.999498Z[0m [32m INFO[0m [2mserver::routes::task_attempts[0m[2m:[0m Created attempt for task f9b18135-1c5f-45c4-a1fe-3a566edaa711 (mode: Branch)
+[2m2026-01-06T10:29:31.443093Z[0m [32m INFO[0m [2mserver::routes::task_attempts[0m[2m:[0m Opened editor for task attempt ef7069ed-e750-416a-920c-8a2a859611e9 at path: /Users/avivkaplan/src/vibe-kanban/vibe-kanban/server.log
+[2m2026-01-06T10:31:19.937675Z[0m [32m INFO[0m [2mserver::routes::task_attempts[0m[2m:[0m Created attempt for task 256d8a60-8683-4c2b-b176-8bc3e3881d3c (mode: Branch)
+[2m2026-01-06T10:33:23.942087Z[0m [32m INFO[0m [2mserver::routes::tasks[0m[2m:[0m Starting background cleanup for task f9b18135-1c5f-45c4-a1fe-3a566edaa711 (0 workspaces, 1 repos)
+[2m2026-01-06T10:33:23.942519Z[0m [32m INFO[0m [2mserver::routes::tasks[0m[2m:[0m Background cleanup completed for task f9b18135-1c5f-45c4-a1fe-3a566edaa711
