@@ -6,12 +6,12 @@
 # Handles both task-based and taskless (small fixes) workflows.
 #
 
-PROJECT_ID="[PROJECT_ID_TBD]"
+PROJECT_ID="dcdb7eeb-66be-480d-bc78-327bda6c7f2d"
 
 INPUT=$(cat)
 
 # If PROJECT_ID not set, skip validation
-if [[ "$PROJECT_ID" == "[PROJECT_ID_TBD]" ]]; then
+if [[ "$PROJECT_ID" == "" ]]; then
   exit 0
 fi
 
