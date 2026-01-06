@@ -127,7 +127,12 @@ export type Image = { id: string, file_path: string, original_name: string, mime
 
 export type CreateImage = { file_path: string, original_name: string, mime_type: string | null, size_bytes: bigint, hash: string, };
 
-export type Workspace = { id: string, task_id: string, container_ref: string | null, branch: string, agent_working_dir: string | null, workspace_mode: string, setup_completed_at: string | null, created_at: string, updated_at: string, };
+export type Workspace = { id: string, task_id: string, container_ref: string | null, branch: string, agent_working_dir: string | null, setup_completed_at: string | null,
+/**
+ * Workspace mode: "worktree" (default) or "branch" (ORCHESTRATOR_MANAGED)
+ * In "branch" mode, work happens directly in the main repo's checked-out branch
+ */
+workspace_mode: string, created_at: string, updated_at: string, };
 
 export type Session = { id: string, workspace_id: string, executor: string | null, created_at: string, updated_at: string, };
 
@@ -291,8 +296,11 @@ export type BulkUpdateTasksRequest = { task_ids: Array<string>, status: string, 
 
 export type BulkUpdateTasksResponse = { updated_tasks: Array<Task>, count: number, };
 
+<<<<<<< Updated upstream
 export type GetAgentMetadataResponse = { task_id: string, metadata: Array<AgentMetadataEntry>, count: number, };
 
+=======
+>>>>>>> Stashed changes
 export type CreateAndStartTaskRequest = { task: CreateTask, executor_profile_id: ExecutorProfileId, repos: Array<WorkspaceRepoInput>, };
 
 export type CreateWebhookRequest = { 

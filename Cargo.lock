@@ -5360,6 +5360,8 @@ dependencies = [
  "futures",
  "futures-util",
  "git2",
+ "hex",
+ "hmac",
  "ignore",
  "json-patch",
  "moka",
