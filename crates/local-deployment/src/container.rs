@@ -647,7 +647,10 @@ impl LocalContainerService {
         .map_err(|e| ContainerError::Other(anyhow!("{e}")))
     }
 
-    /// Stream diff for branch-only workspaces using main repo paths
+    /// Stream diff for branch-only workspaces using main repo paths.
+    /// This uses committed-only diffs (DiffTarget::Branch) to show only changes
+    /// that have been committed to the workspace branch, excluding untracked files
+    /// and uncommitted working directory changes.
     async fn stream_diff_branch_only(
         &self,
         workspace: &Workspace,
@@ -669,9 +672,9 @@ impl LocalContainerService {
         for repo in repositories {
             // For branch-only mode, use the main repo path directly
             let repo_path = PathBuf::from(&repo.path);
-            let branch = &workspace.branch;
+            let branch = workspace.branch.clone();
 
-            let Some(target_branch) = target_branches.get(&repo.id) else {
+            let Some(target_branch) = target_branches.get(&repo.id).cloned() else {
                 tracing::warn!(
                     "Skipping diff stream for repo {}: no target branch configured",
                     repo.name
@@ -679,29 +682,18 @@ impl LocalContainerService {
                 continue;
             };
 
-            let base_commit = match self
-                .git()
-                .get_base_commit(&repo.path, branch, target_branch)
-            {
-                Ok(c) => c,
-                Err(e) => {
-                    tracing::warn!(
-                        "Skipping diff stream for repo {}: failed to get base commit: {}",
-                        repo.name,
-                        e
-                    );
-                    continue;
-                }
-            };
-
-            let stream = self
-                .create_live_diff_stream(
-                    &repo_path,
-                    &base_commit,
-                    stats_only,
-                    Some(repo.name.clone()),
-                )
-                .await?;
+            // Use create_branch_only which compares committed changes only
+            // (tree-to-tree diff), not working directory state
+            let stream = diff_stream::create_branch_only(
+                self.git().clone(),
+                repo_path,
+                branch,
+                target_branch,
+                stats_only,
+                Some(repo.name.clone()),
+            )
+            .await
+            .map_err(|e| ContainerError::Other(anyhow!("{e}")))?;
 
             streams.push(Box::pin(stream));
         }
