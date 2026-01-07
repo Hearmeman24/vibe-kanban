@@ -7,6 +7,7 @@ import { AgentAvatarDisplay } from '@/components/AgentAvatarDisplay';
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -136,33 +137,35 @@ export function AgentAvatarFilter({
       )}
     >
       {/* All Agents button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant={isAllSelected ? 'default' : 'outline'}
-            size="sm"
-            onClick={handleSelectAll}
-            className={cn(
-              'flex items-center gap-2 shrink-0 h-12 px-4',
-              isAllSelected && 'ring-2 ring-primary ring-offset-2'
-            )}
-          >
-            <Users className="h-4 w-4" />
-            <span>All</span>
-            {totalTaskCount > 0 && (
-              <span className="ml-1 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-                {totalTaskCount}
-              </span>
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p className="font-medium">All Agents</p>
-          <p className="text-xs text-muted-foreground">
-            Show all tasks ({totalTaskCount})
-          </p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant={isAllSelected ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleSelectAll}
+              className={cn(
+                'flex items-center gap-2 shrink-0 h-12 px-4',
+                isAllSelected && 'ring-2 ring-primary ring-offset-2'
+              )}
+            >
+              <Users className="h-4 w-4" />
+              <span>All</span>
+              {totalTaskCount > 0 && (
+                <span className="ml-1 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+                  {totalTaskCount}
+                </span>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="font-medium">All Agents</p>
+            <p className="text-xs text-muted-foreground">
+              Show all tasks ({totalTaskCount})
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Separator */}
       <div className="h-8 w-px bg-border shrink-0" />
@@ -206,50 +209,52 @@ function AgentAvatarItem({
     : agent.name;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={onClick}
-          className={cn(
-            'relative flex-shrink-0 rounded-full transition-all duration-200',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            isSelected
-              ? 'ring-2 ring-primary ring-offset-2 scale-105'
-              : 'hover:scale-105 opacity-70 hover:opacity-100'
-          )}
-        >
-          <AgentAvatarDisplay
-            agentName={agent.name}
-            avatar={avatar ?? undefined}
-            size="sm"
-            role={agent.description}
-          />
-          {/* Task count badge */}
-          {agent.taskCount > 0 && (
-            <span
-              className={cn(
-                'absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center',
-                'text-[10px] font-semibold rounded-full px-1',
-                isSelected
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted-foreground text-background'
-              )}
-            >
-              {agent.taskCount > 99 ? '99+' : agent.taskCount}
-            </span>
-          )}
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="font-medium">{tooltipLabel}</p>
-        <p className="text-xs text-muted-foreground">
-          {agent.taskCount === 1
-            ? '1 task'
-            : `${agent.taskCount} tasks`}
-        </p>
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onClick}
+            className={cn(
+              'relative flex-shrink-0 rounded-full transition-all duration-200',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              isSelected
+                ? 'ring-2 ring-primary ring-offset-2 scale-105'
+                : 'hover:scale-105 opacity-70 hover:opacity-100'
+            )}
+          >
+            <AgentAvatarDisplay
+              agentName={agent.name}
+              avatar={avatar ?? undefined}
+              size="sm"
+              role={agent.description}
+            />
+            {/* Task count badge */}
+            {agent.taskCount > 0 && (
+              <span
+                className={cn(
+                  'absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center',
+                  'text-[10px] font-semibold rounded-full px-1',
+                  isSelected
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted-foreground text-background'
+                )}
+              >
+                {agent.taskCount > 99 ? '99+' : agent.taskCount}
+              </span>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-medium">{tooltipLabel}</p>
+          <p className="text-xs text-muted-foreground">
+            {agent.taskCount === 1
+              ? '1 task'
+              : `${agent.taskCount} tasks`}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
