@@ -32,7 +32,7 @@ export { useOrganizationInvitations } from './useOrganizationInvitations';
 export { useOrganizationMutations } from './useOrganizationMutations';
 export { useVariant } from './useVariant';
 export { useRetryProcess } from './useRetryProcess';
-export { useAgentAvatars } from './useAgentAvatars';
+export { useAgentAvatars, useAgentAvatar } from './useAgentAvatars';
 export type { AgentAvatars, UseAgentAvatarsReturn } from './useAgentAvatars';
 export { useProjectAgents } from './useProjectAgents';
 export type { DiscoveredAgent, UseProjectAgentsResult } from './useProjectAgents';
