@@ -33,6 +33,6 @@ export { useOrganizationMutations } from './useOrganizationMutations';
 export { useVariant } from './useVariant';
 export { useRetryProcess } from './useRetryProcess';
 export { useAgentAvatars, useAgentAvatar } from './useAgentAvatars';
-export type { AgentAvatars, UseAgentAvatarsReturn } from './useAgentAvatars';
+export type { UseAgentAvatarsReturn } from './useAgentAvatars';
 export { useProjectAgents, projectAgentKeys } from './useProjectAgents';
 export { useGlobalAgents, globalAgentKeys } from './useGlobalAgents';

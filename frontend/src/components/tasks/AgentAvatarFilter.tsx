@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useProjectAgents, useAgentAvatars } from '@/hooks';
-import type { DiscoveredAgent } from '@/hooks';
+import type { AgentMetadata } from '@/lib/api';
 import { AgentAvatarDisplay } from '@/components/AgentAvatarDisplay';
 import {
   Tooltip,
@@ -14,9 +14,11 @@ import { Button } from '@/components/ui/button';
 /**
  * The default Claude agent (orchestrator) that is always included
  */
-const CLAUDE_AGENT: DiscoveredAgent = {
+const CLAUDE_AGENT: AgentMetadata = {
   name: 'Claude',
-  role: 'Orchestrator',
+  description: 'Orchestrator',
+  path: '',
+  avatarLetter: 'C',
 };
 
 export interface AgentAvatarFilterProps {
@@ -32,7 +34,7 @@ export interface AgentAvatarFilterProps {
   className?: string;
 }
 
-interface AgentWithCount extends DiscoveredAgent {
+interface AgentWithCount extends AgentMetadata {
   taskCount: number;
 }
 
@@ -44,7 +46,7 @@ interface AgentWithCount extends DiscoveredAgent {
  * - Shows task count badge on each avatar
  * - Multi-select capability (click to toggle)
  * - "All Agents" button to clear selection
- * - Tooltip with agent name, role, and task count on hover
+ * - Tooltip with agent name, description, and task count on hover
  */
 export function AgentAvatarFilter({
   projectId,
@@ -53,12 +55,12 @@ export function AgentAvatarFilter({
   taskCounts = {},
   className,
 }: AgentAvatarFilterProps) {
-  const { agents: projectAgents, isLoading } = useProjectAgents(projectId);
+  const { data: projectAgents = [], isLoading } = useProjectAgents(projectId);
   const { getAvatar } = useAgentAvatars();
 
   // Merge project agents with Claude, ensuring Claude is always present
   const allAgents = useMemo((): AgentWithCount[] => {
-    const agentMap = new Map<string, DiscoveredAgent>();
+    const agentMap = new Map<string, AgentMetadata>();
 
     // Always include Claude first
     agentMap.set(CLAUDE_AGENT.name.toLowerCase(), CLAUDE_AGENT);
@@ -199,8 +201,8 @@ function AgentAvatarItem({
   isSelected,
   onClick,
 }: AgentAvatarItemProps) {
-  const tooltipLabel = agent.role
-    ? `${agent.name} (${agent.role})`
+  const tooltipLabel = agent.description
+    ? `${agent.name} (${agent.description})`
     : agent.name;
 
   return (
@@ -221,7 +223,7 @@ function AgentAvatarItem({
             agentName={agent.name}
             avatar={avatar ?? undefined}
             size="sm"
-            role={agent.role}
+            role={agent.description}
           />
           {/* Task count badge */}
           {agent.taskCount > 0 && (
