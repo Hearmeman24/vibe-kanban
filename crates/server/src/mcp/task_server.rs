@@ -1192,6 +1192,19 @@ impl TaskServer {
 
         let normalized_executor = executor_trimmed.replace('-', "_").to_ascii_uppercase();
 
+        // ENFORCED: Only ORCHESTRATOR_MANAGED is supported
+        // Other executors (CLAUDE_CODE, CODEX, GEMINI, CURSOR_AGENT, OPENCODE) are no longer accepted.
+        // This restriction enforces the orchestration workflow where agents manage their own workspace.
+        if normalized_executor != "ORCHESTRATOR_MANAGED" {
+            return Self::err(
+                format!(
+                    "Only ORCHESTRATOR_MANAGED executor is supported. Received: '{}'",
+                    executor_trimmed
+                ),
+                None::<String>,
+            );
+        }
+
         // Handle ORCHESTRATOR_MANAGED as a special case
         let is_orchestrator_managed = normalized_executor == "ORCHESTRATOR_MANAGED";
 
