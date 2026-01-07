@@ -282,7 +282,7 @@ pub struct StartWorkspaceSessionRequest {
     pub repos: Vec<McpWorkspaceRepoInput>,
     #[schemars(description = "Optional name of the agent starting the session (e.g., 'Ferris', 'Miley'). When provided, metadata is logged to track agent activity.")]
     pub agent_name: Option<String>,
-    #[schemars(description = "Workspace mode: 'worktree' (default) creates full worktree/container, 'branch' creates only git branch and database records")]
+    #[schemars(description = "Workspace mode. Only 'branch' is supported with ORCHESTRATOR_MANAGED executor")]
     pub mode: Option<String>,
 }
 
