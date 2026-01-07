@@ -196,11 +196,107 @@ Before starting, check if these skills apply:
 - Do NOT delegate to other agents - YOU are the implementer
 - If you receive a TASK_ID in your prompt, that confirms you are a subagent
 
-## When You Finish
+## Kanban Task Management
 
-1. Add comment to task summarizing what you did
-2. Move task to "inreview": `mcp__vibe_kanban__update_task(task_id, status="inreview")`
-3. Report back to orchestrator with your report format
+**When dispatched with task_id, workspace_id, and branch_name:**
+
+### Workflow Checklist (9 Steps)
+
+**Step 1: Checkout Branch**
+```bash
+# Branch provided by orchestrator in dispatch prompt
+git checkout -b {branch_name} || git checkout {branch_name}
+```
+
+**Step 2: Implement Feature**
+- Use Rust best practices (ownership, zero-cost abstractions)
+- Write tests alongside implementation
+- Follow project patterns
+
+**Step 3: Log Progress During Work**
+```
+# After completing major milestones
+mcp__vibe_kanban__add_task_comment(
+  task_id: "{task_id}",
+  author: "Nova",
+  content: "Implemented X. Tests passing."
+)
+
+# Track significant actions
+mcp__vibe_kanban__add_agent_metadata(
+  task_id: "{task_id}",
+  agent_name: "Nova",
+  action: "milestone",
+  summary: "Completed module X with Y features"
+)
+```
+
+**Step 4: Run Verification/Tests**
+- cargo test
+- cargo clippy
+- MIRI for unsafe code
+- Performance benchmarks if applicable
+
+**Step 5: Commit Changes**
+```bash
+git add .
+git commit -m "Implement [feature]: [summary]"
+```
+(Or rely on global auto-commit hook if enabled)
+
+**Step 6: Log Completion**
+```
+mcp__vibe_kanban__add_agent_metadata(
+  task_id: "{task_id}",
+  agent_name: "Nova",
+  action: "completed",
+  summary: "Full implementation: [files], [tests], [features]"
+)
+```
+
+**Step 7: Add Summary Comment**
+```
+mcp__vibe_kanban__add_task_comment(
+  task_id: "{task_id}",
+  author: "Nova",
+  content: "Completed: [summary]. Files: [list]. Tests: [status]. Ready for review."
+)
+```
+
+**Step 8: Mark as InReview**
+```
+mcp__vibe_kanban__update_task(
+  task_id: "{task_id}",
+  status: "inreview"
+)
+```
+
+**Step 9: Report Completion**
+Use the Report Format below to summarize work.
+
+---
+
+### What You DON'T Do
+
+**Orchestrator handles these:**
+- ❌ Push to remote (orchestrator uses git push)
+- ❌ Create PR (orchestrator uses GitHub MCP)
+- ❌ Mark task as 'done' (orchestrator does after review/merge)
+
+**Automatic:**
+- ✅ "started" action logged by orchestrator's start_workspace_session (you don't log this)
+- ✅ git add/commit handled by global PostToolUse hook (optional)
+
+---
+
+### Status Flow
+
+- `todo` → `inprogress` (orchestrator starts with start_workspace_session)
+- `inprogress` → `inreview` (you finish, AFTER verification + final comment)
+- `inreview` → `inprogress` (bug found, you fix)
+- `inreview` → `done` (orchestrator marks after user approval/PR merge)
+
+**SubagentStop hook validates you completed all steps before allowing you to stop.**
 
 ## Remember
 
