@@ -115,3 +115,10 @@ export {
   FolderPickerDialog,
   type FolderPickerDialogProps,
 } from './shared/FolderPickerDialog';
+
+// Avatar dialogs
+export {
+  AvatarUploadDialog,
+  type AvatarUploadDialogProps,
+  type AvatarUploadResult,
+} from './avatar/AvatarUploadDialog';
