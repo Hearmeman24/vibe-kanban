@@ -880,45 +880,27 @@ const result = await mcp.call("vibe_kanban", "get_agent_metadata", {
 
 #### `start_workspace_session`
 
-Start working on a task by creating a new workspace session. Supports two modes: full worktree mode (default) or lightweight branch-only mode.
+Start working on a task by creating a workspace session with branch-only mode. Only `ORCHESTRATOR_MANAGED` executor is supported - the orchestrator dispatches sub-agents that manage their own processes.
 
 **Parameters:**
 - `task_id` (UUID, **required**)
-- `executor` (String, **required**) - Executor type: 'CLAUDE_CODE', 'CODEX', 'GEMINI', 'CURSOR_AGENT', 'OPENCODE', 'ORCHESTRATOR_MANAGED'
+- `executor` (String, **required**) - Must be `'ORCHESTRATOR_MANAGED'`
 - `variant` (Optional String) - Executor variant if needed
 - `repos` (Array<McpWorkspaceRepoInput>, **required**) - At least one repo required
   - `repo_id` (UUID) - Repository ID
   - `base_branch` (String) - Base/target branch (e.g., "main")
 - `agent_name` (Optional String) - Agent name for metadata logging
-- `mode` (Optional String) - Workspace mode: 'worktree' (default) or 'branch'
-
-**Executor Behavior:**
-
-| Executor | Spawns Process | Creates Workspace DB | Creates Branch | Default Mode |
-|----------|----------------|----------------------|----------------|--------------|
-| `CLAUDE_CODE` | Yes | Yes | Yes | `worktree` |
-| `CODEX` | Yes | Yes | Yes | `worktree` |
-| `GEMINI` | Yes | Yes | Yes | `worktree` |
-| `CURSOR_AGENT` | Yes | Yes | Yes | `worktree` |
-| `OPENCODE` | Yes | Yes | Yes | `worktree` |
-| `ORCHESTRATOR_MANAGED` | **No** | Yes | Yes | `branch` (forced) |
-
-**Mode Behavior:**
-
-| Mode | Creates Worktree | Creates Branch | Returns Working Directory |
-|------|------------------|----------------|---------------------------|
-| `worktree` (default) | Yes | Yes | Worktree path |
-| `branch` | No | Yes | Project root (repo path) |
+- `mode` (Optional String) - Only `'branch'` mode is supported (default)
 
 **ORCHESTRATOR_MANAGED Executor:**
 
-The `ORCHESTRATOR_MANAGED` executor is designed for orchestrator-controlled workflows where:
+The `ORCHESTRATOR_MANAGED` executor is the only supported executor type for this MCP tool. It is designed for orchestrator-controlled workflows where:
 - The orchestrator dispatches sub-agents that manage their own processes
 - No automatic process spawning is needed
 - Workspace tracking and git branch management is still required
 
 Key characteristics:
-- **Forces `mode: "branch"`** - worktree mode is not allowed
+- **Uses `mode: "branch"` only** - worktree mode is not supported
 - **Does NOT spawn any process** - no executor process is started
 - **Creates workspace records** - full database tracking
 - **Creates git branch** - branch created in each repo
@@ -930,13 +912,13 @@ Key characteristics:
 {
   task_id: string;
   workspace_id: string;
-  mode: string;              // 'worktree' or 'branch'
-  executor: string;          // Executor type used (e.g., 'CLAUDE_CODE', 'ORCHESTRATOR_MANAGED')
+  mode: string;              // Always 'branch'
+  executor: string;          // Always 'ORCHESTRATOR_MANAGED'
   repos: Array<{
     repo_id: string;
     branch_name: string;     // Git branch created
     base_branch: string;     // Base branch specified
-    working_directory: string; // Path to work in
+    working_directory: string; // Path to work in (project root)
   }>;
 }
 ```
@@ -946,89 +928,19 @@ Key characteristics:
 2. `WorkspaceRepo` records for each repo
 3. `Session` record
 4. `AgentMetadataEntry` if `agent_name` provided
-5. **For worktree mode:** Triggers container/worktree creation (async)
-6. **For branch mode:** Creates git branch immediately, sets `setup_completed_at`, no worktree/container
+5. Git branch created immediately, `setup_completed_at` set immediately
 
 **Branch Name Format:**
 ```
 vk-{workspace_id}-{sanitized_task_title}
 ```
 
-**Example (Worktree Mode - Default):**
-```typescript
-const result = await mcp.call("vibe_kanban", "start_workspace_session", {
-  task_id: "abc123...",
-  executor: "CLAUDE_CODE",
-  repos: [
-    {
-      repo_id: "repo123...",
-      base_branch: "main"
-    }
-  ],
-  agent_name: "Ferris"
-});
-// {
-//   task_id: "abc123...",
-//   workspace_id: "workspace456...",
-//   mode: "worktree",
-//   repos: [{
-//     repo_id: "repo123...",
-//     branch_name: "vk-workspace456-fix-auth",
-//     base_branch: "main",
-//     working_directory: "/tmp/vk-worktrees/workspace456/repo-name"
-//   }]
-// }
-```
-
-**Example (Branch Mode):**
-```typescript
-const result = await mcp.call("vibe_kanban", "start_workspace_session", {
-  task_id: "abc123...",
-  executor: "CLAUDE_CODE",
-  repos: [
-    {
-      repo_id: "repo123...",
-      base_branch: "main"
-    }
-  ],
-  agent_name: "Ferris",
-  mode: "branch"
-});
-// {
-//   task_id: "abc123...",
-//   workspace_id: "workspace456...",
-//   mode: "branch",
-//   repos: [{
-//     repo_id: "repo123...",
-//     branch_name: "vk-workspace456-fix-auth",
-//     base_branch: "main",
-//     working_directory: "/Users/dev/projects/my-repo"  // Project root
-//   }]
-// }
-```
-
-**Post-creation Actions (Worktree Mode):**
-- Git worktree created for the workspace branch
-- Optional Docker container started
-- Executor environment prepared
-
-**Post-creation Actions (Branch Mode):**
-- Git branch created (not checked out)
-- No worktree or container created
-- `setup_completed_at` set immediately
-- Agent works in the original repo directory
-
-**Use Cases for Branch Mode:**
-- Agents that manage their own workspace (e.g., already running in the repo)
-- Lightweight task tracking without full isolation
-- Faster startup when worktree overhead isn't needed
-
-**Example (ORCHESTRATOR_MANAGED - Orchestrator Workflow):**
+**Example:**
 ```typescript
 // Orchestrator creates workspace for a sub-agent to work on
 const result = await mcp.call("vibe_kanban", "start_workspace_session", {
   task_id: "abc123...",
-  executor: "ORCHESTRATOR_MANAGED",  // No process spawned
+  executor: "ORCHESTRATOR_MANAGED",
   repos: [
     {
       repo_id: "repo123...",
@@ -1040,7 +952,7 @@ const result = await mcp.call("vibe_kanban", "start_workspace_session", {
 // {
 //   task_id: "abc123...",
 //   workspace_id: "workspace456...",
-//   mode: "branch",  // Always branch for ORCHESTRATOR_MANAGED
+//   mode: "branch",
 //   executor: "ORCHESTRATOR_MANAGED",
 //   repos: [{
 //     repo_id: "repo123...",
@@ -1064,7 +976,7 @@ await Task({
 });
 ```
 
-**Use Cases for ORCHESTRATOR_MANAGED:**
+**Use Cases:**
 - Multi-agent orchestration where orchestrator controls sub-agent processes
 - Claude Code sub-agents that run their own process
 - Agents that need workspace tracking without executor management
