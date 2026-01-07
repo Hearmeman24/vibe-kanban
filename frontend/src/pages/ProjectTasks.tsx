@@ -3,14 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, Plus, X, User, Filter } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { AlertTriangle, Plus, X } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { tasksApi } from '@/lib/api';
 import type { RepoBranchStatus, Workspace } from 'shared/types';
@@ -77,6 +70,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { AttemptHeaderActions } from '@/components/panels/AttemptHeaderActions';
 import { TaskPanelHeaderActions } from '@/components/panels/TaskPanelHeaderActions';
+import { AgentAvatarFilter } from '@/components/tasks/AgentAvatarFilter';
 
 import type { TaskWithAttemptStatus, TaskStatus } from 'shared/types';
 
@@ -354,27 +348,33 @@ export function ProjectTasks() {
   const hasSearch = Boolean(searchQuery.trim());
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const showSharedTasks = searchParams.get('shared') !== 'off';
-  const assigneeFilter = searchParams.get('assignee') || 'all';
+  // Agent filter from URL - parse comma-separated list of agent names
+  const agentFilterParam = searchParams.get('agents');
+  const selectedAgents = useMemo(() => {
+    if (!agentFilterParam) return [];
+    return agentFilterParam.split(',').filter(Boolean);
+  }, [agentFilterParam]);
 
-  // Extract unique assignees from tasks
-  const uniqueAssignees = useMemo(() => {
-    const assignees = new Set<string>();
+  // Calculate task counts by assignee for the avatar filter
+  const taskCountsByAssignee = useMemo(() => {
+    const counts: Record<string, number> = {};
     tasks.forEach((task) => {
       if (task.assignee) {
-        assignees.add(task.assignee);
+        counts[task.assignee] = (counts[task.assignee] || 0) + 1;
       }
     });
-    return Array.from(assignees).sort();
+    return counts;
   }, [tasks]);
 
-  // Handler to update assignee filter in URL
-  const handleAssigneeFilterChange = useCallback(
-    (value: string) => {
+
+  // Handler to update selected agents in URL
+  const handleAgentSelectionChange = useCallback(
+    (agents: string[]) => {
       const params = new URLSearchParams(searchParams);
-      if (value === 'all') {
-        params.delete('assignee');
+      if (agents.length === 0) {
+        params.delete('agents');
       } else {
-        params.set('assignee', value);
+        params.set('agents', agents.join(','));
       }
       setSearchParams(params, { replace: true });
     },
@@ -413,10 +413,9 @@ export function ProjectTasks() {
       );
     };
 
-    const matchesAssignee = (taskAssignee: string | null | undefined): boolean => {
-      if (assigneeFilter === 'all') return true;
-      if (assigneeFilter === 'unassigned') return !taskAssignee;
-      return taskAssignee === assigneeFilter;
+    const matchesAgentFilter = (taskAssignee: string | null | undefined): boolean => {
+      if (selectedAgents.length === 0) return true;
+      return taskAssignee ? selectedAgents.includes(taskAssignee) : false;
     };
 
     tasks.forEach((task) => {
@@ -429,7 +428,7 @@ export function ProjectTasks() {
         return;
       }
 
-      if (!matchesAssignee(task.assignee)) {
+      if (!matchesAgentFilter(task.assignee)) {
         return;
       }
 
@@ -491,7 +490,7 @@ export function ProjectTasks() {
     sharedTasksById,
     showSharedTasks,
     userId,
-    assigneeFilter,
+    selectedAgents,
   ]);
 
   const visibleTasksByStatus = useMemo(() => {
@@ -870,43 +869,15 @@ export function ProjectTasks() {
       : `${truncated}...`;
   };
 
-  // Assignee filter dropdown component
-  const assigneeFilterDropdown = (
-    <div className="flex items-center gap-2 px-4 py-2">
-      <Filter className="h-4 w-4 text-muted-foreground" />
-      <Select value={assigneeFilter} onValueChange={handleAssigneeFilterChange}>
-        <SelectTrigger className="w-[180px] h-8 text-sm">
-          <SelectValue placeholder={t('filter.assignee', { defaultValue: 'Filter by Assignee' })} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">
-            {t('filter.allAssignees', { defaultValue: 'All Assignees' })}
-          </SelectItem>
-          <SelectItem value="unassigned">
-            {t('filter.unassigned', { defaultValue: 'Unassigned' })}
-          </SelectItem>
-          {uniqueAssignees.map((assignee) => (
-            <SelectItem key={assignee} value={assignee}>
-              <div className="flex items-center gap-2">
-                <User className="h-3 w-3" />
-                {assignee}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {assigneeFilter !== 'all' && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2"
-          onClick={() => handleAssigneeFilterChange('all')}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
-  );
+  // Agent avatar filter component for visual team roster filtering
+  const agentAvatarFilter = projectId ? (
+    <AgentAvatarFilter
+      projectId={projectId}
+      selectedAgents={selectedAgents}
+      onSelectionChange={handleAgentSelectionChange}
+      taskCounts={taskCountsByAssignee}
+    />
+  ) : null;
 
   const kanbanContent =
     tasks.length === 0 && !hasSharedTasks ? (
@@ -923,7 +894,7 @@ export function ProjectTasks() {
       </div>
     ) : !hasVisibleLocalTasks && !hasVisibleSharedTasks ? (
       <div className="max-w-7xl mx-auto mt-8">
-        {assigneeFilterDropdown}
+        {agentAvatarFilter}
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground">
@@ -934,7 +905,7 @@ export function ProjectTasks() {
       </div>
     ) : (
       <div className="w-full h-full flex flex-col overflow-hidden">
-        {assigneeFilterDropdown}
+        {agentAvatarFilter}
         <div className="flex-1 overflow-x-auto overflow-y-auto overscroll-x-contain">
           <TaskKanbanBoard
             columns={kanbanColumns}
