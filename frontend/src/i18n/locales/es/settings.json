@@ -12,7 +12,9 @@
         "mcp": "Servidores MCP",
         "mcpDesc": "Servidores de Protocolo de Contexto de Modelo (MCP)",
         "organizations": "Organization Settings",
-        "organizationsDesc": "Manage organization members and permissions"
+        "organizationsDesc": "Manage organization members and permissions",
+        "agents-configuration": "Configuracion de Agentes",
+        "agents-configurationDesc": "Gestionar perfiles y avatares de agentes"
       }
     },
     "general": {
@@ -370,6 +372,44 @@
         "unsavedChanges": "• Tienes cambios sin guardar",
         "discard": "Descartar",
         "confirmSwitch": "Tienes cambios sin guardar. ¿Estás seguro de que quieres cambiar de proyecto? Tus cambios se perderán."
+      }
+    },
+    "agentsConfiguration": {
+      "title": "Configuracion de Agentes",
+      "description": "Gestiona los perfiles de tu equipo de agentes y personaliza los avatares",
+      "claude": "Claude (Orquestador)",
+      "orchestrator": "Orquestador",
+      "loading": "Cargando agentes...",
+      "noAgents": "No hay agentes disponibles",
+      "agent": {
+        "name": "Agente",
+        "role": "Rol",
+        "avatar": "Avatar",
+        "uploadButton": "Subir Avatar",
+        "uploading": "Subiendo..."
+      },
+      "upload": {
+        "title": "Subir Avatar",
+        "dragDrop": "Arrastra y suelta la imagen o haz clic para subir",
+        "formats": "Soportados: PNG, JPG, WebP (max 5MB)",
+        "cancel": "Cancelar",
+        "upload": "Subir",
+        "uploading": "Subiendo...",
+        "success": "Avatar actualizado exitosamente",
+        "invalidFile": "Tipo de archivo no valido. Por favor sube PNG, JPG o WebP.",
+        "fileTooLarge": "El archivo es demasiado grande. Tamano maximo 5MB.",
+        "error": "Error al subir el avatar"
+      },
+      "roles": {
+        "CLAUDE_CODE": "Asistente Claude Code",
+        "AMP": "Agente Amp",
+        "GEMINI": "Google Gemini",
+        "CODEX": "OpenAI Codex",
+        "OPENCODE": "OpenCode",
+        "CURSOR_AGENT": "Agente Cursor",
+        "QWEN_CODE": "Qwen Code",
+        "COPILOT": "GitHub Copilot",
+        "DROID": "Agente Droid"
       }
     }
   },

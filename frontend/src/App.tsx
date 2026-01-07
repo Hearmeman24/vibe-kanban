@@ -12,6 +12,7 @@ import { usePreviousPath } from '@/hooks/usePreviousPath';
 
 import {
   AgentSettings,
+  AgentsConfigurationPage,
   GeneralSettings,
   McpSettings,
   OrganizationSettings,
@@ -144,6 +145,7 @@ function AppContent() {
                     element={<OrganizationSettings />}
                   />
                   <Route path="agents" element={<AgentSettings />} />
+                  <Route path="agents-configuration" element={<AgentsConfigurationPage />} />
                   <Route path="mcp" element={<McpSettings />} />
                 </Route>
                 <Route
